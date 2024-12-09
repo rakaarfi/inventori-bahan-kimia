@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Departemen{% endblock %}
+{% block content %}
+<header>
+    <h1>Nama Departemen/Bagian</h1>
+</header>
+
+<div class="container-form mb-3">
+    <form action="/departement/create_departement/" method="post">
+        <table class="departement">
+            <tr>
+                <td><label for="departement" class="form-label">Departemen/Bagian:</label></td>
+                <td><input type="text" id="departement" name="departement" class="form-control" required></td>
+            </tr>
+            <tr>
+                <td colspan="2"><button type="submit" value="Submit" class="submit-button btn-primary">Submit</button>
+                </td>
+            </tr>
+        </table>
+
+    </form>    
+</div>
+{% endblock %}

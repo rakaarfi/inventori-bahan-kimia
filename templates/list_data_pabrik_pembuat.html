@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Departemen{% endblock %}
+{% block content %}
+<header>
+    <h1>Daftar Data Pabrik Pembuat</h1>
+</header>
+
+<!-- Form Pencarian -->
+<form action="/data_pabrik_pembuat/list_data_pabrik_pembuat" method="get" class="mb-3">
+    <input type="text" name="search" placeholder="Cari Data Pabrik" value="{{ search_query }}" class="form-control" />
+    <button type="submit" class="btn btn-primary mt-2">Cari</button>
+</form>
+
+<!-- Daftar Data Pabrik Pembuat -->
+<div class="container-form mb-3">
+    <div class="row">
+        <table class="table-departemen-list">
+            <thead>
+                <tr>
+                    <th scope="col">No</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for data in list_data_pabrik_pembuat['data'] %}
+                <tr class="data-row">
+                    <td>{{ loop.index + ((list_data_pabrik_pembuat['page'] - 1) * 10) }}</td>
+
+                    <!-- Kolom untuk input data -->
+                    <td>
+                        <form action="/data_pabrik_pembuat/update_data_pabrik_pembuat/{{ data.id }}" method="post"
+                            style="display:inline;">
+                            <input type="text" name="name" value="{{ data.name }}" required />
+                            <input type="text" name="address" value="{{ data.address }}" required />
+                            <input type="text" name="phone" value="{{ data.phone }}" required />
+                        </form>
+                    </td>
+
+                    <!-- Kolom untuk tombol Edit dan Delete -->
+                    <td>
+                        <form action="/data_pabrik_pembuat/update_data_pabrik_pembuat/{{ data.id }}" method="post"
+                            style="display:inline;">
+                            <button type="submit" class="btn btn-warning">Edit</button>
+                        </form>
+
+                        <form action="/data_pabrik_pembuat/delete_data_pabrik_pembuat/{{ data.id }}" method="post"
+                            style="display:inline;">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="pagination">
+            <!-- Tombol Previous -->
+            {% if list_data_pabrik_pembuat['page'] > 1 %}
+            <a href="?page={{ list_data_pabrik_pembuat['page'] - 1 }}&search={{ search_query }}"
+                class="btn btn-primary">Previous</a>
+            {% endif %}
+
+            <!-- Tombol Next -->
+            {% if list_data_pabrik_pembuat['total_pages'] > list_data_pabrik_pembuat['page'] %}
+            <a href="?page={{ list_data_pabrik_pembuat['page'] + 1 }}&search={{ search_query }}"
+                class="btn btn-primary">Next</a>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

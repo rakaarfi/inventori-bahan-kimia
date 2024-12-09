@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Location of Chemical{% endblock %}
+{% block content %}
+<header>
+    <h1>Lokasi Bahan Kimia</h1>
+</header>
+<div class="container-form">
+    <form action="/lokasi_bahan_kimia/create_lokasi_bahan_kimia/" method="post">
+        <table>
+            <tr>
+                <td><label for="ruang">Ruang:</label></td>
+                <td><input type="text" id="room" name="room" class="ruang-bahan" required></td>
+            </tr>
+            <tr>
+                <td><label for="lokasi">Lokasi:</label></td>
+                <td><input type="text" id="location" name="location" class="lokasi-bahan" required></td>
+            </tr>
+            <tr>
+                <td><label for="bangunan">Bangunan:</label></td>
+                <td><input type="text" id="building" name="building" class="bangunan-bahan" required></td>
+            </tr>
+            <tr>
+                <td><label for="departement">Departemen/Bagian:</label></td>
+                <td><input type="text" id="departement_name" name="departement_name" class="departemen-bahan"></td>
+            </tr>
+            <tr>
+                <td><label for="contact-person">Contact Person:</label></td>
+                <td><input type="text" id="contact_person" name="contact_person" class="contact-bahan" required></td>
+            </tr>
+            <tr>
+                <td><label for="telepon">No Telepon:</label></td>
+                <td><input type="text" id="phone" name="phone" class="telepon-bahan" required></td>
+            </tr>
+            <tr>
+                <td colspan="2"><button class="submit-button btn-primary" type="submit" value="Submit">Submit</button>
+                </td>
+            </tr>
+        </table>
+    </form>
+
+</div>
+{% endblock %}

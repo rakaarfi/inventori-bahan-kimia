@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Data Pabrik Pembuat{% endblock %}
+{% block content %}
+<header>
+    <h1>Data Pabrik Pembuat</h1>
+</header>
+<div class="container-form">
+    <form action="/data_pabrik_pembuat/create_data_pabrik_pembuat/" method="post">
+        <table>
+            <tr>
+                <td><label for="nama">Nama:</label></td>
+                <td><input type="text" id="name" name="name" class="nama-pabrik" required></td>
+            </tr>
+            <tr>
+                <td><label for="alamat">Alamat:</label></td>
+                <td><input type="text" id="address" name="address" class="alamat-pabrik" required></td>
+            </tr>
+            <tr>
+                <td><label for="telepon">No Telepon:</label></td>
+                <td><input type="text" id="phone" name="phone" class="telepon-pabrik" required></td>
+            </tr>
+            <tr>
+                <td colspan="2"><button class="submit-button btn-primary" type="submit" value="Submit">Submit</button>
+                </td>
+            </tr>
+        </table>
+    </form>
+
+</div>
+{% endblock %}

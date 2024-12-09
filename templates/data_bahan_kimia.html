@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Data Bahan Kimia{% endblock %}
+{% block content %}
+<header>
+    <h1>Data Bahan Kimia</h1>
+</header>
+<div class="container-form">
+    <form action="" method="post">
+        <table>
+            <tr>
+                <td><label for="ruang">Ruang:</label></td>
+                <td><input type="text" id="ruang" name="ruang" class="firsts-row"></td>
+            </tr>
+            <tr>
+                <td><label for="nama-bahan-kimia">Nama Bahan Kimia:</label></td>
+                <td><input type="text" id="nama-bahan-kimia" name="nama-bahan-kimia" class="firsts-row"></td>
+            </tr>
+            <tr>
+                <td><label for="nama-dagang">Nama Dagang:</label></td>
+                <td><input type="text" id="nama-dagang" name="bangunan" class="firsts-row"></td>
+            </tr>
+            <tr>
+                <td><label for="rumus-kimia">Rumus Kimia:</label></td>
+                <td><input type="text" id="rumus-kimia" name="rumus-kimia" class="firsts-row"></td>
+            </tr>
+            <tr>
+                <td><label for="pabrik-pembuat">Pabrik Pembuat:</label></td>
+                <td><input type="text" id="pabrik-pembuat" name="pabrik-pembuat" class="firsts-row"></td>
+            </tr>
+            <tr>
+                <td><label for="karakteristik">Karakteristik:</label></td>
+                <td><input type="text" id="karakteristik" name="karakteristik" class="firsts-row"></td>
+            </tr>
+            <tr>
+                <td><label for="jumlah-max">Jumlah Inventori Maksimal:</label></td>
+                <td>
+                    <div class="flex-row">
+                        <input type="text" id="jumlah-max" name="jumlah-max" class="last-row">
+                        <input type="text" id="satuan" name="satuan" placeholder="Satuan" class="last-row">
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2"><button class="submit-button btn-primary" type="submit" value="Submit">Submit</button>
+                </td>
+            </tr>
+        </table>
+    </form>
+
+</div>
+{% endblock %}

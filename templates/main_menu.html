@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Main Menu{% endblock %}
+
+{% block content %}
+<header>
+    <h1>Main Menu</h1>
+</header>
+<div class="container-form mb-3">
+    <div class="row">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th colspan="2">Input Section</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <form action="/departement/" method="get">
+                            <button class="submit-button btn-primary" type="submit" value="Submit">Nama Departemen</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <form action="/lokasi_bahan_kimia/" method="get">
+                            <button class="submit-button btn-primary" type="submit" value="Submit">Lokasi Bahan
+                                Kimia</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <form action="/data_pabrik_pembuat/" method="get">
+                            <button class="submit-button btn-primary" type="submit" value="Submit">Data Pabrik
+                                Pembuat</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <form action="/data_bahan_kimia/" method="get">
+                            <button class="submit-button btn-primary" type="submit" value="Submit">Data Bahan Kimia</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <form action="/penerimaan_penggunaan/" method="get">
+                            <button class="submit-button btn-primary" type="submit" value="Submit">Data
+                                Penerimaan/Penggunaan</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<hr>
+<div class="container-form mb-3">
+    <div class="row">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th colspan="2">Preview Section</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <form action="/daftar_bahan_kimia/" method="get">
+                            <button class="submit-button btn-primary" type="submit" value="Submit">Daftar Bahan
+                                Kimia</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <form action="/inventori_bahan_kimia/" method="get">
+                            <button class="submit-button btn-primary" type="submit" value="Submit">Inventori Bahan
+                                Kimia</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <form action="/data_bahan_kimia/" method="get">
+                            <button class="submit-button btn-primary" type="submit" value="Submit">Data Bahan Kimia</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
