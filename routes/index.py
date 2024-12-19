@@ -1,6 +1,10 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Depends
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
+from sqlmodel import select, Session
+
+from config.database import get_session
+from models.models import Departement
 
 
 router = APIRouter()
@@ -30,8 +34,16 @@ def penerimaan_penggunaan(request: Request):
 
 # Endpoint untuk menampilkan halaman Data Lokasi Bahan Kimia
 @router.get("/lokasi_bahan_kimia", response_class=HTMLResponse)
-def main_menu(request: Request):
-    return templates.TemplateResponse("lokasi_bahan_kimia.html", {"request":request})
+def lokasi_bahan_kimia(request: Request, session: Session = Depends(get_session)):
+    
+    # Memanggil list departement
+    departement_list = session.exec(select(Departement)).all()
+    
+    return templates.TemplateResponse("lokasi_bahan_kimia.html", {
+        "request":request,
+        "departement_list": {
+            'data': departement_list}
+        })
 
 # Endpoint untuk menampilkan halaman Main Menu
 @router.get("/main_menu", response_class=HTMLResponse)

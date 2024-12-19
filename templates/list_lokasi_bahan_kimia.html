@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}Lokasi Bahan Kimia{% endblock %}
+{% block content %}
+<header>
+    <h1>Daftar Lokasi Bahan Kimia</h1>
+</header>
+
+<!-- Form Pencarian -->
+<form action="/lokasi_bahan_kimia/list_lokasi_bahan_kimia" method="get" class="mb-3">
+    <input type="text" name="search" placeholder="Cari Lokasi Bahan Kimia" value="{{ search_query }}"
+        class="form-control" />
+    <button type="submit" class="btn btn-primary mt-2">Cari</button>
+</form>
+
+<!-- Daftar Lokasi Bahan Kimia -->
+<div class="container-form mb-3">
+    <button onclick="location.href = '/lokasi_bahan_kimia';"
+        class="btn btn-primary position-fixed top-0 end-0 m-2">Input
+        Lokasi Bahan Kimia
+    </button>
+    <div class="row">
+        <table class="table-departemen-list">
+            <thead>
+                <tr>
+                    <th scope="col">No</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for data in list_lokasi_bahan_kimia['data'] %}
+                <tr class="data-row">
+                    <td>{{ loop.index + ((list_lokasi_bahan_kimia['page'] - 1) * 10) }}</td>
+
+                    <td>
+                        <form id="update-location-{{ data.id }}" style="display:inline;">
+                            <input type="text" name="room" value="{{ data.room }}" required />
+                            <input type="text" name="location" value="{{ data.location }}" required />
+                            <input type="text" name="building" value="{{ data.building }}" required />
+                            <input type="text" name="department_name" value="{{ data.department_name }}" required />
+                            <input type="text" name="contact_person" value="{{ data.contact_person }}" required />
+                            <input type="text" name="phone" value="{{ data.phone }}" required />
+                            <input type="text" name="extension" value="{{ data.extension }}" required />
+                            <input type="text" name="mobile" value="{{ data.mobile }}" required />
+                            <input type="text" name="email" value="{{ data.email }}" required />
+                        </form>
+                    </td>
+
+                    <td>
+                        <button type="button" class="btn btn-warning edit-button" data-id="{{ data.id }}">
+                            Edit
+                        </button>
+
+                        <form action="/lokasi_bahan_kimia/delete/{{ data.id }}" method="post" style="display:inline;">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
+
+        <!-- Pagination -->
+        <div class="pagination">
+            <!-- Tombol Previous -->
+            {% if list_lokasi_bahan_kimia['page'] > 1 %}
+            <a href="?page={{ list_lokasi_bahan_kimia['page'] - 1 }}&search={{ search_query }}"
+                class="btn btn-primary">Previous</a>
+            {% endif %}
+
+            <!-- Tombol Next -->
+            {% if list_lokasi_bahan_kimia['total_pages'] > list_lokasi_bahan_kimia['page'] %}
+            <a href="?page={{ list_lokasi_bahan_kimia['page'] + 1 }}&search={{ search_query }}"
+                class="btn btn-primary">Next</a>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+
+<script>
+    document.addEventListener('click', async function (event) {
+        if (event.target.classList.contains('edit-button')) {
+            const button = event.target;
+            const dataId = button.getAttribute('data-id');
+            const form = document.getElementById(`update-location-${dataId}`);
+            const formData = new FormData(form);
+            const updatedData = Object.fromEntries(formData.entries());
+    
+            console.log('Sending Updated Data:', updatedData);
+    
+            try {
+                const response = await fetch(`/lokasi_bahan_kimia/update/${dataId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(updatedData),
+                });
+    
+                if (response.ok) {
+                    alert('Data berhasil disimpan!');
+                    window.location.href = '/lokasi_bahan_kimia/list_lokasi_bahan_kimia/';
+                } else {
+                    const errorData = await response.json();
+                    console.error('Error Response:', errorData);
+                    alert(`Gagal menyimpan data: ${errorData.detail || 'Kesalahan tidak diketahui'}`);
+                }
+            } catch (error) {
+                alert('Terjadi kesalahan saat menyimpan data. Mohon coba lagi.');
+                console.error('Network or Server Error:', error);
+            }
+        }
+    });
+    
+</script>
+
+{% endblock %}

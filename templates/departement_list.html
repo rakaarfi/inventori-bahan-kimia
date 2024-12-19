@@ -12,6 +12,11 @@
 </form> -->
 
 <div class="container-form mb-3">
+    
+    <button onclick="location.href = '/departement';" class="btn btn-primary position-fixed top-0 end-0 m-2">Input
+        Departement
+    </button>
+
     <div class="row">
         <table class="table-departemen-list">
             <thead>
@@ -28,18 +33,18 @@
 
                     <td>
                         <!-- Kolom untuk input data -->
-                        <form action="/departement/update_departement/{{ departement.name }}" method="post" style="display:inline;"> 
-                            <input type="text" name="new_name" value="{{ departement.name }}" required/>
+                        <form id='update-departement' action="/departement/update_departement/{{ departement.name }}"
+                            method="post" style="display:inline;">
+                            <input type="text" name="new_name" value="{{ departement.name }}" required />
                         </form>
                     </td>
 
                     <!-- Kolom untuk tombol Edit dan Delete -->
                     <td>
-                        <form action="/departement/update_departement/{{ departement.name }}" method="post" style="display:inline;"> 
-                            <button type="submit" class="btn btn-warning">Edit</button>
-                        </form>
+                        <button type="submit" class="btn btn-warning" form="update-departement">Edit</button>
 
-                        <form action="/departement/delete_departement/{{ departement.name }}" method="post" style="display:inline;">
+                        <form action="/departement/delete_departement/{{ departement.name }}" method="post"
+                            style="display:inline;">
                             <button type="submit" class="btn btn-danger">Delete</button>
                         </form>
                     </td>
@@ -51,12 +56,14 @@
         <div class="pagination">
             <!-- Tombol Previous -->
             {% if departement_list['page'] > 1 %}
-            <a href="/departement/departement_list?page={{ departement_list['page'] - 1 }}" class="btn btn-primary">Previous</a>
+            <a href="/departement/departement_list?page={{ departement_list['page'] - 1 }}"
+                class="btn btn-primary">Previous</a>
             {% endif %}
 
             <!-- Tombol Next -->
             {% if departement_list['total_pages'] > departement_list['page'] %}
-            <a href="/departement/departement_list?page={{ departement_list['page'] + 1 }}" class="btn btn-primary">Next</a>
+            <a href="/departement/departement_list?page={{ departement_list['page'] + 1 }}"
+                class="btn btn-primary">Next</a>
             {% endif %}
         </div>
     </div>

@@ -10,13 +10,24 @@ class LokasiBahanKimia(SQLModel, table=True):
     room: str
     location: str
     building: str
-    departement_name: str
+    department_name: str
     contact_person: str
     phone: str
+    extension: str
+    mobile: str
+    email: str
 
 # Model untuk Data Pabrik Pembuat
 class DataPabrikPembuat(SQLModel, table=True):
     id: int = Field(default=None, primary_key=True)
     name: str
     address: str
+    city: str
+    zipcode: str
+    province: str
+    contact_person: str
     phone: str
+    extension: str
+    mobile: str
+    email: str
+    description: str

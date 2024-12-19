@@ -5,7 +5,7 @@
     <h1>Data Pabrik Pembuat</h1>
 </header>
 <div class="container-form">
-    <form action="/data_pabrik_pembuat/create_data_pabrik_pembuat/" method="post">
+    <form action="/data_pabrik_pembuat/create_data_pabrik_pembuat/" method="post" id="pabrikForm">
         <table>
             <tr>
                 <td><label for="nama">Nama:</label></td>
@@ -16,15 +16,78 @@
                 <td><input type="text" id="address" name="address" class="alamat-pabrik" required></td>
             </tr>
             <tr>
+                <td><label for="kota">Kota:</label></td>            
+                <td><input type="text" id="city" name="city" class="kota-pabrik" required></td>
+            </tr>
+            <tr>
+                <td><label for="kode-pos">Kode Pos:</label></td>
+                <td><input type="text" id="zipcode" name="zipcode" class="kode-pos-pabrik" required></td>
+            </tr>
+            <tr>
+                <td><label for="provinsi">Provinsi:</label></td>
+                <td><input type="text" id="province" name="province" class="provinsi-pabrik" required></td>
+            </tr>
+            <tr>
+                <td><label for="contact_person">Contact Person:</label></td>
+                <td><input type="text" id="contact_person" name="contact_person" class="contact-pabrik" required></td>
+            </tr>
+            <tr>
                 <td><label for="telepon">No Telepon:</label></td>
                 <td><input type="text" id="phone" name="phone" class="telepon-pabrik" required></td>
             </tr>
             <tr>
-                <td colspan="2"><button class="submit-button btn-primary" type="submit" value="Submit">Submit</button>
+                <td><label for="extension">Extension:</label></td>
+                <td><input type="text" id="extension" name="extension" class="extension-pabrik" required></td>
+            </tr>
+            <tr>
+                <td><label for="mobile">Mobile:</label></td>
+                <td><input type="text" id="mobile" name="mobile" class="mobile-pabrik" required></td>
+            </tr>
+            <tr>
+                <td><label for="email">Email:</label></td>
+                <td><input type="text" id="email" name="email" class="email-pabrik w-full" required></td>
+            </tr>
+            <tr>
+                <td><label for="description">Keterangan:</label></td>
+                <td><input type="text" id="description" name="description" class="description-pabrik" required></td>
+            </tr>
+            <tr>
+                <td colspan="2"><button class="submit-button btn-primary" type="submit" value="Submit" id="submitButton">Submit</button>
                 </td>
             </tr>
         </table>
     </form>
-
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('pabrikForm').addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            const formData = new FormData(document.getElementById('pabrikForm'));
+            const data = Object.fromEntries(formData);
+            
+            try {
+                const response = await fetch('/data_pabrik_pembuat/create_data_pabrik_pembuat/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                });
+                
+                if (response.ok) {
+                    alert('Data berhasil disimpan!');
+                    window.location.href = '/data_pabrik_pembuat/list_data_pabrik_pembuat/';
+                } else {
+                    const errorData = await response.json();
+                    alert(`Gagal menyimpan data: ${errorData.detail}`);
+                }
+            } catch (error) {
+                alert('Terjadi kesalahan saat menyimpan data.');
+                console.error(error);
+            }
+        });
+    });
+</script>
 {% endblock %}

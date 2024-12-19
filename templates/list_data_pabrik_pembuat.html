@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Departemen{% endblock %}
+{% block title %}Data Pabrik Pembuat{% endblock %}
 {% block content %}
 <header>
     <h1>Daftar Data Pabrik Pembuat</h1>
@@ -13,6 +13,9 @@
 
 <!-- Daftar Data Pabrik Pembuat -->
 <div class="container-form mb-3">
+    <button onclick="location.href = '/data_pabrik_pembuat';" class="btn btn-primary position-fixed top-0 end-0 m-2">
+        Input Data Pabrik Pembuat
+    </button>
     <div class="row">
         <table class="table-departemen-list">
             <thead>
@@ -29,22 +32,28 @@
 
                     <!-- Kolom untuk input data -->
                     <td>
-                        <form action="/data_pabrik_pembuat/update_data_pabrik_pembuat/{{ data.id }}" method="post"
+                        <form id='update-data-pabrik-pembuat'
+                            action="/data_pabrik_pembuat/update/{{ data.id }}" method="post"
                             style="display:inline;">
                             <input type="text" name="name" value="{{ data.name }}" required />
                             <input type="text" name="address" value="{{ data.address }}" required />
+                            <input type="text" name="city" value="{{ data.city }}" required />
+                            <input type="text" name="zipcode" value="{{ data.zipcode }}" required />
+                            <input type="text" name="province" value="{{ data.province }}" required />
+                            <input type="text" name="contact_person" value="{{ data.contact_person }}" required />
                             <input type="text" name="phone" value="{{ data.phone }}" required />
+                            <input type="text" name="extension" value="{{ data.extension }}" required />
+                            <input type="text" name="mobile" value="{{ data.mobile }}" required />
+                            <input type="text" name="email" value="{{ data.email }}" required />
+                            <input type="text" name="description" value="{{ data.description }}" required />
                         </form>
                     </td>
 
                     <!-- Kolom untuk tombol Edit dan Delete -->
                     <td>
-                        <form action="/data_pabrik_pembuat/update_data_pabrik_pembuat/{{ data.id }}" method="post"
-                            style="display:inline;">
-                            <button type="submit" class="btn btn-warning">Edit</button>
-                        </form>
+                        <button type="submit" class="btn btn-warning" form="update-data-pabrik-pembuat">Edit</button>
 
-                        <form action="/data_pabrik_pembuat/delete_data_pabrik_pembuat/{{ data.id }}" method="post"
+                        <form action="/data_pabrik_pembuat/delete/{{ data.id }}" method="post"
                             style="display:inline;">
                             <button type="submit" class="btn btn-danger">Delete</button>
                         </form>

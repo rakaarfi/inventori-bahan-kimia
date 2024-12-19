@@ -2,43 +2,45 @@ from fastapi import APIRouter, Depends, HTTPException, Form, Request
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlmodel import select, Session
+from pydantic import BaseModel
 
-from models.models import LokasiBahanKimia
+from models.models import LokasiBahanKimia, Departement
 from config.database import get_session
 
 
-router = APIRouter()
+class LokasiBahanKimiaRequest(BaseModel):
+    room: str
+    location: str
+    building: str
+    department_name: str    
+    contact_person: str
+    phone: str
+    extension: str
+    mobile: str
+    email: str
 
 # Template Jinja untuk rendering HTML
 templates = Jinja2Templates(directory="templates")
 
+router = APIRouter()
+
 # Endpoint untuk membuat Lokasi Bahan Kimia baru
 @router.post("/create_lokasi_bahan_kimia/")
 def create_lokasi_bahan_kimia(
+    request: LokasiBahanKimiaRequest,
     session: Session = Depends(get_session), 
-    room: str = Form(...), 
-    location: str = Form(...), 
-    building: str = Form(...),
-    departement_name: str = Form(...),
-    contact_person: str = Form(...),
-    phone: str = Form(...)
     ):
     
-    new_lokasi_bahan_kimia = LokasiBahanKimia(
-        room=room, 
-        location=location, 
-        building=building, 
-        departement_name=departement_name,
-        contact_person=contact_person, 
-        phone=phone
-        )
+    new_lokasi_bahan_kimia = LokasiBahanKimia(**request.model_dump())
     
     session.add(new_lokasi_bahan_kimia)
     session.commit()
     session.refresh(new_lokasi_bahan_kimia)
     
+    # return new_lokasi_bahan_kimia
     return new_lokasi_bahan_kimia
-    # return RedirectResponse(url="/data_pabrik_pembuat/list_data_pabrik_pembuat", status_code=303)
+    return RedirectResponse(url="/lokasi-bahan-kimia", status_code=303)
+    return RedirectResponse(url="/lokasi_bahan_kimia/list_lokasi_bahan_kimia", status_code=303)
 
 # Endpoint untuk membaca semua Lokasi Bahan Kimia
 @router.get("/read_lokasi_bahan_kimia/")
@@ -47,38 +49,36 @@ def read_lokasi_bahan_kimia(session: Session = Depends(get_session)):
     return lokasi_bahan_kimia
 
 # Endpoint untuk memperbarui Lokasi Bahan Kimia
-@router.post("/update_lokasi_bahan_kimia/{id}")
+@router.post("/update/{id}")
 def update_lokasi_bahan_kimia(
+    request: LokasiBahanKimiaRequest,
     id: int, 
-    session: Session = Depends(get_session), 
-    room: str = Form(...), 
-    location: str = Form(...), 
-    building: str = Form(...),
-    departement_name: str = Form(...),
-    contact_person: str = Form(...),
-    phone: str = Form(...)
+    session: Session = Depends(get_session),
     ):
     
     db_lokasi_bahan_kimia = session.exec(select(LokasiBahanKimia).where(LokasiBahanKimia.id == id)).first()
     if db_lokasi_bahan_kimia is None:
-        raise HTTPException(status_code=404, detail="Data Pabrik Pembuat tidak ditemukan")
+        raise HTTPException(status_code=404, detail="Lokasi Bahan Kimia tidak ditemukan")
     
-    db_lokasi_bahan_kimia.room = room
-    db_lokasi_bahan_kimia.location = location
-    db_lokasi_bahan_kimia.building = building
-    db_lokasi_bahan_kimia.departement_name = departement_name
-    db_lokasi_bahan_kimia.contact_person = contact_person
-    db_lokasi_bahan_kimia.phone = phone
+    db_lokasi_bahan_kimia.room = request.room
+    db_lokasi_bahan_kimia.location = request.location
+    db_lokasi_bahan_kimia.building = request.building
+    db_lokasi_bahan_kimia.department_name = request.department_name
+    db_lokasi_bahan_kimia.contact_person = request.contact_person
+    db_lokasi_bahan_kimia.phone = request.phone
+    db_lokasi_bahan_kimia.extension = request.extension
+    db_lokasi_bahan_kimia.mobile = request.mobile
+    db_lokasi_bahan_kimia.email = request.email
     
     session.add(db_lokasi_bahan_kimia)
     session.commit()
     session.refresh(db_lokasi_bahan_kimia)
     
-    return db_lokasi_bahan_kimia
-    # return RedirectResponse(url="/data_pabrik_pembuat/list_data_pabrik_pembuat", status_code=303)
+    # return db_lokasi_bahan_kimia
+    return RedirectResponse(url="/lokasi_bahan_kimia/list_lokasi_bahan_kimia", status_code=303)
 
 # Endpoint untuk menghapus Lokasi Bahan Kimia
-@router.post("/delete_lokasi_bahan_kimia/{id}")
+@router.post("/delete/{id}")
 def delete_lokasi_bahan_kimia(
     id: int, 
     session: Session = Depends(get_session)):
@@ -86,49 +86,62 @@ def delete_lokasi_bahan_kimia(
     db_lokasi_bahan_kimia = session.exec(select(LokasiBahanKimia).where(LokasiBahanKimia.id == id)).first()
     
     if db_lokasi_bahan_kimia is None:
-        raise HTTPException(status_code=404, detail="Data Pabrik Pembuat tidak ditemukan")
+        raise HTTPException(status_code=404, detail="Lokasi Bahan Kimia tidak ditemukan")
     
     session.delete(db_lokasi_bahan_kimia)
     session.commit()
     
-    return RedirectResponse(url="/lokasi_bahan_kimia/read_lokasi_bahan_kimia", status_code=303)
+    return RedirectResponse(url="/lokasi_bahan_kimia/list_lokasi_bahan_kimia", status_code=303)
 
-# @router.get("/list_data_pabrik_pembuat")
-# def list_data_pabrik_pembuat(
-#     request: Request, page: int = 1, 
-#     limit: int = 10, search: str = '', 
-#     session: Session = Depends(get_session)):
+@router.get("/list_lokasi_bahan_kimia/")
+def list_lokasi_bahan_kimia(
+    request: Request, page: int = 1, 
+    limit: int = 10, search: str = '', 
+    session: Session = Depends(get_session)):
 
-#     # Hitung offset berdasarkan halaman yang diminta
-#     offset = (page - 1) * limit
+    # Hitung offset berdasarkan halaman yang diminta
+    offset = (page - 1) * limit
 
-#     # Query untuk mencari data dengan pencarian di nama, alamat, atau telepon
-#     query = select(DataPabrikPembuat).offset(offset).limit(limit)
+    # Query untuk mencari data dengan pencarian di nama, alamat, atau telepon
+    query = select(LokasiBahanKimia).offset(offset).limit(limit)
     
-#     condition = (DataPabrikPembuat.name.ilike(f'%{search}%') |
-#                 DataPabrikPembuat.address.ilike(f'%{search}%') |
-#                 DataPabrikPembuat.phone.ilike(f'%{search}%'))
+    condition = (
+        LokasiBahanKimia.room.ilike(f'%{search}%') |
+        LokasiBahanKimia.location.ilike(f'%{search}%') |
+        LokasiBahanKimia.building.ilike(f'%{search}%') |
+        LokasiBahanKimia.department_name.ilike(f'%{search}%') |
+        LokasiBahanKimia.contact_person.ilike(f'%{search}%') |
+        LokasiBahanKimia.phone.ilike(f'%{search}%') |
+        LokasiBahanKimia.extension.ilike(f'%{search}%') |
+        LokasiBahanKimia.mobile.ilike(f'%{search}%') |
+        LokasiBahanKimia.email.ilike(f'%{search}%')
+    )
     
-#     if search:
-#         query = query.where(condition)
+    if search:
+        query = query.where(condition)
     
-#     # Ambil data dengan pagination berdarsarkan query
-#     data = session.exec(query).all()
+    # Ambil data dengan pagination berdarsarkan query
+    data = session.exec(query).all()
     
-#     # Hitung total jumlah data yang sesuai dengan query pencarian
-#     total_data = len(session.exec(select(DataPabrikPembuat).where(condition)).all())
+    # Hitung total jumlah data yang sesuai dengan query pencarian
+    total_data = len(session.exec(select(LokasiBahanKimia).where(condition)).all())
     
-#     # Menghitung jumlah halaman
-#     total_pages = (total_data + limit - 1) // limit  # Membulatkan ke atas
+    # Menghitung jumlah halaman
+    total_pages = (total_data + limit - 1) // limit  # Membulatkan ke atas
     
-#     # Mengembalikan data dan pagination
-#     return templates.TemplateResponse("list_data_pabrik_pembuat.html", {
-#         "request": request,
-#         "list_data_pabrik_pembuat": {
-#             "data": data,
-#             "page": page,
-#             "total_pages": total_pages,
-#             "total_data": total_data
-#         },
-#         "search_query": search # Menyertakan query pencarian dalam template
-#     })
+    # Memanggil list departement
+    departement_list = session.exec(select(Departement)).all()
+
+    # Mengembalikan data dan pagination
+    return templates.TemplateResponse("list_lokasi_bahan_kimia.html", {
+        "request": request,
+        "list_lokasi_bahan_kimia": {
+            "data": data,
+            "page": page,
+            "total_pages": total_pages,
+            "total_data": total_data
+        },
+        "search_query": search, # Menyertakan query pencarian dalam template
+        "departement_list": {
+            'data': departement_list}
+    })

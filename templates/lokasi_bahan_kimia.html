@@ -5,7 +5,7 @@
     <h1>Lokasi Bahan Kimia</h1>
 </header>
 <div class="container-form">
-    <form action="/lokasi_bahan_kimia/create_lokasi_bahan_kimia/" method="post">
+    <form id="lokasiForm">
         <table>
             <tr>
                 <td><label for="ruang">Ruang:</label></td>
@@ -20,8 +20,9 @@
                 <td><input type="text" id="building" name="building" class="bangunan-bahan" required></td>
             </tr>
             <tr>
-                <td><label for="departement">Departemen/Bagian:</label></td>
-                <td><input type="text" id="departement_name" name="departement_name" class="departemen-bahan"></td>
+                <td><label for="department_name">Departemen/Bagian:</label></td>
+                <td><input type="text" id="department_name" name="department_name" class="department-bahan" required>
+                </td>
             </tr>
             <tr>
                 <td><label for="contact-person">Contact Person:</label></td>
@@ -32,11 +33,58 @@
                 <td><input type="text" id="phone" name="phone" class="telepon-bahan" required></td>
             </tr>
             <tr>
-                <td colspan="2"><button class="submit-button btn-primary" type="submit" value="Submit">Submit</button>
+                <td><label for="telepon">Extension:</label></td>
+                <td><input type="text" id="extension" name="extension" class="extension-bahan" required></td>
+            </tr>
+            <tr>
+                <td><label for="telepon">Mobile:</label></td>
+                <td><input type="text" id="mobile" name="mobile" class="mobile-bahan" required></td>
+            </tr>
+            <tr>
+                <td><label for="telepon">Email:</label></td>
+                <td><input type="text" id="email" name="email" class="email-bahan" required></td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <button class="submit-button btn-primary" type="submit" value="Submit"
+                        id="submitButton">Submit</button>
                 </td>
             </tr>
         </table>
     </form>
-
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById('lokasiForm').addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            const formData = new FormData(document.getElementById('lokasiForm'));
+            const data = Object.fromEntries(formData);
+
+            try {
+                const response = await fetch('/lokasi_bahan_kimia/create_lokasi_bahan_kimia/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                });
+
+                if (response.ok) {
+                    alert('Data berhasil disimpan!');
+                    window.location.href = '/lokasi_bahan_kimia/list_lokasi_bahan_kimia/';
+                } else {
+                    const errorData = await response.json();
+                    alert(`Gagal menyimpan data: ${errorData.detail}`);
+                }
+            } catch (error) {
+                alert('Terjadi kesalahan saat menyimpan data.');
+                console.error(error);
+            }
+        });
+    });    
+
+</script>
+
 {% endblock %}
