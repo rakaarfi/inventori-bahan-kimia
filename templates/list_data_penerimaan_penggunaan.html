@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}Data Penerimaan Penggunaan{% endblock %}
+{% block content %}
+<header>
+    <h1>Daftar Data Penerimaan Penggunaan</h1>
+</header>
+
+<!-- Form Pencarian -->
+<form action="/data_penerimaan_penggunaan/list_data_penerimaan_penggunaan" method="get" class="mb-3">
+    <input type="text" name="search" placeholder="Cari Data Penerimaan Penggunaan" value="{{ search_query }}" class="form-control" />
+    <button type="submit" class="btn btn-primary mt-2">Cari</button>
+</form>
+
+<!-- Daftar Data Penerimaan Penggunaan -->
+<div class="container-form mb-3">
+    <button onclick="location.href = '/data_penerimaan_penggunaan';" class="btn btn-primary position-fixed top-0 end-0 m-2">
+        Input Data Penerimaan Penggunaan
+    </button>
+    <div class="row">
+        <table class="table-departemen-list">
+            <thead>
+                <tr>
+                    <th scope="col">No</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for chemical_material_name, data in list_data_penerimaan_penggunaan['data'] %}
+                <tr class="data-row">
+                    <td>{{ loop.index + ((list_data_penerimaan_penggunaan['page'] - 1) * 10) }}</td>
+
+                    <!-- Kolom untuk input data -->
+                    <td>
+                        <form id="update-recieptUsage-{{ data.id }}"
+                            action="/data_penerimaan_penggunaan/update/{{ data.id }}" method="post"
+                            style="display:inline;">
+
+                            <select name="id_chemical_material" id="room">
+                                <option value="" disabled selected>Pilih Bahan Kimia</option>
+                                {% for info in data_bahan_kimia.data %}
+                                    <option value="{{ info.id }}"
+                                    {{ 'selected' if info.id == data.id_chemical_material else '' }}>
+                                        {{ info.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+
+                            <input id="startDate" class="form-control" type="date" name="date" value="{{ data.date }}" required/>
+
+                            <select id='transaction_type' name="transaction_type" class="form-select" required>
+                                <option value="" disabled selected>Pilih Transaksi</option>
+                                {% for transaction_type in transactions_type %}
+                                <option value="{{ transaction_type }}"
+                                    {{ 'selected' if transaction_type == data.transaction_type else '' }}>
+                                        {{ transaction_type }}
+                                </option>
+                                {% endfor %}
+                            </select>
+
+                            <input type="number" step="any" name="amount" value="{{ data.amount }}" required />
+                            <input type="text" name="unit" value="{{ data.unit }}" required />
+                            <input type="text" name="description" value="{{ data.description }}" required/>
+                        </form>
+                    </td>
+
+                    <!-- Kolom untuk tombol Edit dan Delete -->
+                    <td>
+                        <button type="submit" class="btn btn-warning edit-button"  data-id="{{ data.id }}">
+                            Edit
+                        </button>
+
+                        <form action="/data_penerimaan_penggunaan/delete/{{ data.id }}" method="post"
+                            style="display:inline;">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="pagination">
+            <!-- Tombol Previous -->
+            {% if list_data_penerimaan_penggunaan['page'] > 1 %}
+            <a href="?page={{ list_data_penerimaan_penggunaan['page'] - 1 }}&search={{ search_query }}"
+                class="btn btn-primary">Previous</a>
+            {% endif %}
+
+            <!-- Tombol Next -->
+            {% if list_data_penerimaan_penggunaan['total_pages'] > list_data_penerimaan_penggunaan['page'] %}
+            <a href="?page={{ list_data_penerimaan_penggunaan['page'] + 1 }}&search={{ search_query }}"
+                class="btn btn-primary">Next</a>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+
+<script>
+    document.addEventListener('click', async function (event) {
+        if (event.target.classList.contains('edit-button')) {
+            const button = event.target;
+            const dataId = button.getAttribute('data-id');
+            const form = document.getElementById(`update-recieptUsage-${dataId}`);
+            const formData = new FormData(form);
+            const updatedData = Object.fromEntries(formData.entries());
+    
+
+            console.log('Sending Updated Data:', updatedData);
+    
+            try {
+                const response = await fetch(`/data_penerimaan_penggunaan/update/${dataId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(updatedData),
+                });
+    
+                if (response.ok) {
+                    alert('Data berhasil disimpan!');
+                    window.location.href = '/data_penerimaan_penggunaan/list_data_penerimaan_penggunaan/';
+                } else {
+                    const errorData = await response.json();
+                    console.error('Error Response:', errorData);
+                    alert(`Gagal menyimpan data: ${errorData.detail || 'Kesalahan tidak diketahui'}`);
+                }
+            } catch (error) {
+                alert('Terjadi kesalahan saat menyimpan data. Mohon coba lagi.');
+                console.error('Network or Server Error:', error);
+            }
+        }
+    });
+    
+</script>
+
+{% endblock %}

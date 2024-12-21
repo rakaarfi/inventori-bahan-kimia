@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block title %}Data Bahan Kimia{% endblock %}
+{% block content %}
+<header>
+    <h1>Daftar Data Bahan Kimia</h1>
+</header>
+
+<!-- Form Pencarian -->
+<form action="/data_bahan_kimia/list_data_bahan_kimia" method="get" class="mb-3">
+    <input type="text" name="search" placeholder="Cari Data Bahan Kimia" value="{{ search_query }}" class="form-control" />
+    <button type="submit" class="btn btn-primary mt-2">Cari</button>
+</form>
+
+<!-- Daftar Data Bahan Kimia -->
+<div class="container-form mb-3">
+    <button onclick="location.href = '/data_bahan_kimia';" class="btn btn-primary position-fixed top-0 end-0 m-2">
+        Input Data Bahan Kimia
+    </button>
+    <div class="row">
+        <table class="table-departemen-list">
+            <thead>
+                <tr>
+                    <th scope="col">No</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for factory_name,location_room, data in list_data_bahan_kimia['data'] %}
+                <tr class="data-row">
+                    <td>{{ loop.index + ((list_data_bahan_kimia['page'] - 1) * 10) }}</td>
+
+                    <!-- Kolom untuk input data -->
+                    <td>
+                        <form id="update-location-{{ data.id }}"
+                            action="/data_bahan_kimia/update/{{ data.id }}" method="post"
+                            style="display:inline;">
+
+                            <select name="id_location" id="room">
+                                <option value="" disabled selected>Pilih Ruang</option>
+                                {% for lokasi in lokasi_bahan_kimia.data %}
+                                    <option value="{{ lokasi.id }}"
+                                    {{ 'selected' if lokasi.id == data.id_location else '' }}>
+                                        {{ lokasi.room }}
+                                </option>
+                                {% endfor %}
+                            </select>
+
+                            <input type="text" name="name" value="{{ data.name }}" required />
+                            <input type="text" name="trade_name" value="{{ data.trade_name }}" required />
+                            <input type="text" name="chemical_formula" value="{{ data.chemical_formula }}" required />
+
+                            <select name="id_factory" id="factory_name" required>
+                                <option value="" disabled selected>Pilih Pabrik</option>
+                                {% for pabrik in data_pabrik_pembuat.data %}
+                                <option value="{{ pabrik.id }}" 
+                                    {{ 'selected' if pabrik.id == data.id_factory else '' }}>
+                                        {{ pabrik.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+
+                            <select name="characteristic" id="characteristic" required>
+                                <option value="" disabled selected>Pilih Karakteristik</option>
+                                {% for characteristic in characteristics %}
+                                <option value="{{ characteristic }}"
+                                    {{ 'selected' if characteristic == data.characteristic else '' }}>
+                                        {{ characteristic }}
+                                </option>
+                                {% endfor %}
+                            </select>
+
+                            <input type="number" step="any" name="max_amount" value="{{ data.max_amount }}" required />
+                            <input type="text" name="unit" value="{{ data.unit }}" required />
+                            <input type="text" name="description" value="{{ data.description }}" required />
+                        </form>
+                    </td>
+
+                    <!-- Kolom untuk tombol Edit dan Delete -->
+                    <td>
+                        <button type="submit" class="btn btn-warning edit-button"  data-id="{{ data.id }}">
+                            Edit
+                        </button>
+
+                        <form action="/data_bahan_kimia/delete/{{ data.id }}" method="post"
+                            style="display:inline;">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="pagination">
+            <!-- Tombol Previous -->
+            {% if list_data_bahan_kimia['page'] > 1 %}
+            <a href="?page={{ list_data_bahan_kimia['page'] - 1 }}&search={{ search_query }}"
+                class="btn btn-primary">Previous</a>
+            {% endif %}
+
+            <!-- Tombol Next -->
+            {% if list_data_bahan_kimia['total_pages'] > list_data_bahan_kimia['page'] %}
+            <a href="?page={{ list_data_bahan_kimia['page'] + 1 }}&search={{ search_query }}"
+                class="btn btn-primary">Next</a>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+
+<script>
+    document.addEventListener('click', async function (event) {
+        if (event.target.classList.contains('edit-button')) {
+            const button = event.target;
+            const dataId = button.getAttribute('data-id');
+            const form = document.getElementById(`update-location-${dataId}`);
+            const formData = new FormData(form);
+            const updatedData = Object.fromEntries(formData.entries());
+    
+
+            console.log('Sending Updated Data:', updatedData);
+    
+            try {
+                const response = await fetch(`/data_bahan_kimia/update/${dataId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(updatedData),
+                });
+    
+                if (response.ok) {
+                    alert('Data berhasil disimpan!');
+                    window.location.href = '/data_bahan_kimia/list_data_bahan_kimia/';
+                } else {
+                    const errorData = await response.json();
+                    console.error('Error Response:', errorData);
+                    alert(`Gagal menyimpan data: ${errorData.detail || 'Kesalahan tidak diketahui'}`);
+                }
+            } catch (error) {
+                alert('Terjadi kesalahan saat menyimpan data. Mohon coba lagi.');
+                console.error('Network or Server Error:', error);
+            }
+        }
+    });
+    
+</script>
+
+{% endblock %}

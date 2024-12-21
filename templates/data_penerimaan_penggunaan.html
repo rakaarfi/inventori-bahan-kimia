@@ -4,16 +4,232 @@
 <header>
     <h1>Data Penerimaan Penggunaan Bahan Kimia</h1>
 </header>
-<div class="container text-center">
-    <div class="row">
-        <div class="col">
-            <table class="table-data-bahan">
+<form id="penerimaan-penggunaan-form">
+    <!-- Dropdown untuk memilih bahan kimia -->
+    <label for="id_chemical_material">Pilih Bahan Kimia:</label>
+    <select name="id_chemical_material" id="id_chemical_material">
+        <option value="" disabled selected>Pilih Bahan Kimia</option>
+        {% for data in data_bahan_kimia.data %}
+        <option value="{{ data.id }}">{{ data.name }}</option>
+        {% endfor %}
+    </select>
+    <div class="container text-center">
+        <div class="row">
+            <div class="col">
+                <table class="table-data-bahan">
+                    <thead>
+                        <tr>
+                            <th scope="col" colspan="4">Data Bahan Kimia</th>
+                        </tr>
+                    </thead>
+                    <tbody id="data-chemical-details">
+                        <tr>
+                            <td class="data-bahan">Nama Bahan Kimia</td>
+                            <td class="data-bahan">________________</td>
+                        </tr>
+                        <tr>
+                            <td class="data-bahan">Merek Dagang</td>
+                            <td class="data-bahan">________________</td>
+                        </tr>
+                        <tr>
+                            <td class="data-bahan">Jumlah Maksimum Inventori</td>
+                            <td class="data-bahan">________________</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col">
+                <table class="table-lokasi-bahan">
+                    <thead>
+                        <tr>
+                            <th scope="col" colspan="4">Lokasi Bahan Kimia</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="data-bahan">Ruang</td>
+                            <td class="data-bahan" id="location-room">________________</td>
+                        </tr>
+                        <tr>
+                            <td class="data-bahan">Lokasi</td>
+                            <td class="data-bahan" id="location-lokasi">________________</td>
+                        </tr>
+                        <tr>
+                            <td class="data-bahan">Bangunan</td>
+                            <td class="data-bahan" id="location-building">________________</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col">
+                <table class="table-pabrik-pembuat">
+                    <thead>
+                        <tr>
+                            <th scope="col" colspan="4">Data Pabrik Pembuat</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="data-bahan">Nama Pabrik Pembuat</td>
+                            <td class="data-bahan" id="factory-name">________________</td>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="row">
+            <table class="table-penerimaan-penggunaan">
                 <thead>
                     <tr>
-                        <th scope="col" colspan="4">Data Bahan Kimia</th>
+                        <th scope="col">Tanggal</th>
+                        <th scope="col">Jenis Transaksi</th>
+                        <th scope="col">Jumlah</th>
+                        <th scope="col">Unit</th>
+                        <th scope="col">Keterangan</th>
+                        <th scope="col">Aksi</th> <!-- Menambahkan kolom untuk tombol aksi -->
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="table-body">
+                    <tr class="data-row">
+                        <td>
+                            <input id="startDate" class="form-control" type="date" name="date" required/>
+                        </td>
+                        <td>
+                            <select id='transaction_type' name="transaction_type" class="form-select" required>
+                                <option value="" disabled selected>Pilih Transaksi</option>
+                                <option value="Penerimaan">Penerimaan</option>
+                                <option value="Penggunaan">Penggunaan</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="number" step="any" id="amount" name="amount" class="form-control" required/>
+                        </td>
+                        <td>
+                            <select name="unit" id="unit" class="form-select" required>
+                                <option value="" disabled selected>Pilih Unit</option>
+                                <option value="Gram">Gram</option>
+                                <option value="Kilogram">Kilogram</option>
+                                <option value="Kiloliter">Kiloliter</option>
+                                <option value="Kotak">Kotak</option>
+                                <option value="Kilo">Kilo</option>
+                                <option value="Mililiter">Mililiter</option>
+                                <option value="Ton">Ton</option>
+                            </select>
+                        </td>
+                        <td>
+                            <textarea name="description" id="description" required></textarea>
+                        </td>
+                        <td>
+                            <!-- Tombol untuk menambah atau menghapus baris -->
+                            <button type="button" class="btn btn-success" onclick="addNewRow()">+</button>
+                        </td>
+                    </tr>
+                </tbody>
+                <tr>
+                    <td colspan="6">
+                        <button class="submit-button btn-primary" type="submit" value="Submit">
+                            Submit
+                        </button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('penerimaan-penggunaan-form').addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            const formData = new FormData(document.getElementById('penerimaan-penggunaan-form'));
+            const data = Object.fromEntries(formData);
+
+            parseInt(data.amount);
+
+            // Mengambil data dari setiap baris transaksi (yang ada di dalam tabel)
+            const rows = document.querySelectorAll('#table-body .data-row');
+            const transactions = [];
+
+            rows.forEach(row => {
+                const transactionData = {
+                    id_chemical_material: data.id_chemical_material, // Menambahkan id_chemical_material ke setiap transaksi
+                    date: row.querySelector('[name="date"]').value,
+                    transaction_type: row.querySelector('[name="transaction_type"]').value,
+                    amount: row.querySelector('[name="amount"]').value,
+                    unit: row.querySelector('[name="unit"]').value,
+                    description: row.querySelector('[name="description"]').value
+                };
+                transactions.push(transactionData);
+            }); 
+
+            // Menambahkan array transaksi ke data yang akan dikirim
+            data.transactions = transactions;
+
+            console.log(transactions);
+
+            try {
+                const response = await fetch('/data_penerimaan_penggunaan/create/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ transactions: transactions }), // Ubah format data yang dikirim
+                });
+
+                if (response.ok) {
+                    alert('Data berhasil disimpan!');
+                    window.location.href = '/data_penerimaan_penggunaan/';
+                } else {
+                    const errorData = await response.json();
+                    alert(`Gagal menyimpan data: ${errorData.detail}`);
+                }
+            } catch (error) {
+                alert('Terjadi kesalahan saat menyimpan data.');
+                console.error(error);
+            }
+        });
+    })
+
+    document.getElementById('id_chemical_material').addEventListener('change', function (event) {
+        const selectedId = event.target.value;
+        const chemicalData = {{ data_bahan_kimia['data']| tojson }};
+        const locationData = {{ lokasi_bahan_kimia['data']| tojson }};
+        const factoryData = {{ data_pabrik_pembuat['data']| tojson }};
+
+    // Cari data bahan kimia yang dipilih
+    const selectedChemical = chemicalData.find(item => item.id == selectedId);
+
+    // Perbarui data lokasi dan data pabrik jika bahan kimia ditemukan
+    if (selectedChemical) {
+        const selectedLocation = locationData.find(loc => loc.id == selectedChemical.id_location);
+        const selectedFactory = factoryData.find(fac => fac.id == selectedChemical.id_factory);
+
+        // Perbarui tabel bahan kimia
+        document.getElementById('data-chemical-details').innerHTML = `
+                    <tr>
+                        <td class="data-bahan">Nama Bahan Kimia</td>
+                        <td class="data-bahan">${selectedChemical.name}</td>
+                    </tr>
+                    <tr>
+                        <td class="data-bahan">Merek Dagang</td>
+                        <td class="data-bahan">${selectedChemical.trade_name}</td>
+                    </tr>
+                    <tr>
+                        <td class="data-bahan">Jumlah Maksimum Inventori</td>
+                        <td class="data-bahan">${selectedChemical.max_amount} ${selectedChemical.unit}</td>
+                    </tr>
+                `;
+
+        // Perbarui tabel lokasi
+        document.getElementById('location-room').textContent = selectedLocation ? selectedLocation.room : "________________";
+        document.getElementById('location-lokasi').textContent = selectedLocation ? selectedLocation.location : "________________";
+        document.getElementById('location-building').textContent = selectedLocation ? selectedLocation.building : "________________";
+
+        // Perbarui tabel pabrik pembuat
+        document.getElementById('factory-name').textContent = selectedFactory ? selectedFactory.name : "________________";
+    } else {
+        // Reset tabel jika tidak ada data yang dipilih
+        document.getElementById('data-chemical-details').innerHTML = `
                     <tr>
                         <td class="data-bahan">Nama Bahan Kimia</td>
                         <td class="data-bahan">________________</td>
@@ -26,143 +242,65 @@
                         <td class="data-bahan">Jumlah Maksimum Inventori</td>
                         <td class="data-bahan">________________</td>
                     </tr>
-                </tbody>
-            </table>
-        </div>
-        <div class="col">
-            <table class="table-lokasi-bahan">
-                <thead>
-                    <tr>
-                        <th scope="col" colspan="4">Lokasi Bahan Kimia</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="data-bahan">Ruang</td>
-                        <td class="data-bahan">________________</td>
-                    </tr>
-                    <tr>
-                        <td class="data-bahan">Lokasi</td>
-                        <td class="data-bahan">________________</td>
-                    </tr>
-                    <tr>
-                        <td class="data-bahan">Bangunan</td>
-                        <td class="data-bahan">________________</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        <div class="col">
-            <table class="table-pabrik-pembuat">
-                <thead>
-                    <tr>
-                        <th scope="col" colspan="4">Data Pabrik Pembuat</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="data-bahan">Nama Pabrik Pembuat</td>
-                        <td class="data-bahan">________________</td>
-                </tbody>
-            </table>
-        </div>
-    </div>
-    <div class="row">
-        <form action="" method="post">
-            <table class="table-penerimaan-penggunaan">
-                <thead>
-                    <tr>
-                        <th scope="col">Tanggal</th>
-                        <th scope="col">Jenis Transaksi</th>
-                        <th scope="col">Jumlah</th>
-                        <th scope="col">Unit</th>
-                        <th scope="col">Keterangan</th>
-                    </tr>
-                </thead>
-                <tbody id="table-body">
-                    <tr class="data-row">
-                        <td>
-                            <input id="startDate" class="form-control" type="date" name="tanggal[]" />
-                        </td>
-                        <td><select id='jenis-transaksi' name="jenis-transaksi[]" class="form-select">
-                                <option value="1">Penerimaan</option>
-                                <option value="2">Penggunaan</option>
-                            </select></td>
-                        <td><input id="jumlah" name="jumlah[]" type="text" class="form-control"></td>
-                        <td><select name="unit[]" class="form-select">
-                                <option value="1">Gram</option>
-                                <option value="2">Kilogram</option>
-                                <option value="3">Kiloliter</option>
-                                <option value="4">Kotak</option>
-                                <option value="5">Kilo</option>
-                                <option value="6">Mililiter</option>
-                                <option value="7">Ton</option>
-                            </select></td>
-                        <td><input name="keterangan[]" id="keterangan" type="text" class="form-control keterangan"
-                                aria-label="jumlah"></td>
-                    </tr>
-                </tbody>
-                <tr>
-                    <td colspan="5"><button class="submit-button btn-primary" type="submit"
-                            value="Submit">Submit</button></td>
-                </tr>
-            </table>
-        </form>
-    </div>
-</div>
+                `;
 
-<script>
-    // Ambil referensi ke elemen tabel
-    const tableBody = document.getElementById('table-body');
+        document.getElementById('location-room').textContent = "________________";
+        document.getElementById('location-lokasi').textContent = "________________";
+        document.getElementById('location-building').textContent = "________________";
+        document.getElementById('factory-name').textContent = "________________";
+    }
+    });
 
-    // Fungsi untuk menambahkan baris baru
     function addNewRow() {
+        const tableBody = document.getElementById('table-body');
+    
         // Buat elemen baris baru
         const newRow = document.createElement('tr');
         newRow.classList.add('data-row');
-
+    
         // Tambahkan kolom ke baris baru
         newRow.innerHTML = `
-                    <td>
-                        <input name="tanggal[]" class="form-control" type="date" />
-                    </td>
-                    <td>
-                        <select name="jenis-transaksi[]" class="form-select">
-                            <option value="1">Penerimaan</option>
-                            <option value="2">Penggunaan</option>
-                        </select>
-                    </td>
-                    <td>
-                        <input name="jumlah[]" type="text" class="form-control">
-                    </td>
-                    <td>
-                        <select name="unit[]" class="form-select">
-                            <option value="1">Gram</option>
-                            <option value="2">Kilogram</option>
-                            <option value="3">Kiloliter</option>
-                            <option value="4">Kotak</option>
-                            <option value="5">Kilo</option>
-                            <option value="6">Mililiter</option>
-                            <option value="7">Ton</option>
-                        </select>
-                    </td>
-                    <td>
-                        <input name="keterangan[]" type="text" class="keterangan" aria-label="keterangan">
-                    </td>
-                `;
-
+            <td>
+                <input id="startDate" class="form-control" type="date" name="date" />
+            </td>
+            <td>
+                <select id='transaction_type' name="transaction_type" class="form-select">
+                    <option value="" disabled selected>Pilih Transaksi</option>
+                    <option value="Penerimaan">Penerimaan</option>
+                    <option value="Penggunaan">Penggunaan</option>
+                </select>
+            </td>
+            <td>
+                <input type="number" step="any" id="amount" name="amount" class="form-control"/>
+            </td>
+            <td>
+                <select name="unit" id="unit" class="form-select">
+                    <option value="" disabled selected>Pilih Unit</option>
+                    <option value="Gram">Gram</option>
+                    <option value="Kilogram">Kilogram</option>
+                    <option value="Kiloliter">Kiloliter</option>
+                    <option value="Kotak">Kotak</option>
+                    <option value="Kilo">Kilo</option>
+                    <option value="Mililiter">Mililiter</option>
+                    <option value="Ton">Ton</option>
+                </select>
+            </td>
+            <td>
+                <textarea name="description" id="description"></textarea>
+            </td>
+            <td>
+                <button type="button" class="btn btn-success" onclick="addNewRow()">+</button>
+                <button type="button" class="btn btn-danger" onclick="removeRow(this)">-</button>
+            </td>
+        `;
+    
         // Tambahkan baris baru ke tabel
         tableBody.appendChild(newRow);
     }
-
-    // Event listener untuk menambahkan baris baru ketika baris terakhir terisi
-    tableBody.addEventListener('input', function (event) {
-        const lastRow = tableBody.lastElementChild;
-        const allInputs = lastRow.querySelectorAll('input, select');
-        const allFilled = Array.from(allInputs).every(input => input.value.trim() !== '');
-        if (allFilled) {
-            addNewRow();
-        }
-    });
+    
+    function removeRow(button) {
+        const row = button.closest('tr');
+        row.remove();
+    }
 </script>
 {% endblock %}

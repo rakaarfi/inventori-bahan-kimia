@@ -2,24 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, Form, Request
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlmodel import select, Session
-from pydantic import BaseModel
 
 from models.models import DataPabrikPembuat
 from config.database import get_session
 
-
-class DataPabrikPembuatRequest(BaseModel):
-    name: str
-    address: str
-    city: str
-    zipcode: str
-    province: str
-    contact_person: str
-    phone: str
-    extension: str
-    mobile: str
-    email: str
-    description: str
 
 # Template Jinja untuk rendering HTML
 templates = Jinja2Templates(directory="templates")
@@ -27,9 +13,9 @@ templates = Jinja2Templates(directory="templates")
 router = APIRouter()
 
 # Endpoint untuk membuat Data Pabrik Pembuat baru
-@router.post("/create_data_pabrik_pembuat/")
+@router.post("/create/")
 def create_data_pabrik_pembuat(
-    request: DataPabrikPembuatRequest,
+    request: DataPabrikPembuat,
     session: Session = Depends(get_session), 
     ):
     
@@ -44,7 +30,7 @@ def create_data_pabrik_pembuat(
     return RedirectResponse(url="/data_pabrik_pembuat/list_data_pabrik_pembuat", status_code=303)
 
 # Endpoint untuk membaca semua Data Pabrik Pembuat
-@router.get("/read_data_pabrik_pembuat/")
+@router.get("/read/")
 def read_data_pabrik_pembuat(session: Session = Depends(get_session)):
     data_pabrik_pembuat = session.exec(select(DataPabrikPembuat)).all()
     return data_pabrik_pembuat
@@ -52,7 +38,7 @@ def read_data_pabrik_pembuat(session: Session = Depends(get_session)):
 # Endpoint untuk memperbarui Data Pabrik Pembuat
 @router.post("/update/{id}")
 def update_data_pabrik_pembuat(
-    request: DataPabrikPembuatRequest,
+    request: DataPabrikPembuat,
     id: int, 
     session: Session = Depends(get_session), 
     ):

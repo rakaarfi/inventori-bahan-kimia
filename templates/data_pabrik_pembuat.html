@@ -5,7 +5,7 @@
     <h1>Data Pabrik Pembuat</h1>
 </header>
 <div class="container-form">
-    <form action="/data_pabrik_pembuat/create_data_pabrik_pembuat/" method="post" id="pabrikForm">
+    <form action="/data_pabrik_pembuat/create/" method="post" id="pabrikForm">
         <table>
             <tr>
                 <td><label for="nama">Nama:</label></td>
@@ -68,7 +68,7 @@
             const data = Object.fromEntries(formData);
             
             try {
-                const response = await fetch('/data_pabrik_pembuat/create_data_pabrik_pembuat/', {
+                const response = await fetch('/data_pabrik_pembuat/create/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

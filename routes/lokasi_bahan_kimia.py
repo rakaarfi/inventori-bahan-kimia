@@ -2,22 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, Form, Request
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlmodel import select, Session
-from pydantic import BaseModel
 
-from models.models import LokasiBahanKimia, Departement
+from models.models import LokasiBahanKimia
 from config.database import get_session
 
-
-class LokasiBahanKimiaRequest(BaseModel):
-    room: str
-    location: str
-    building: str
-    department_name: str    
-    contact_person: str
-    phone: str
-    extension: str
-    mobile: str
-    email: str
 
 # Template Jinja untuk rendering HTML
 templates = Jinja2Templates(directory="templates")
@@ -25,9 +13,9 @@ templates = Jinja2Templates(directory="templates")
 router = APIRouter()
 
 # Endpoint untuk membuat Lokasi Bahan Kimia baru
-@router.post("/create_lokasi_bahan_kimia/")
+@router.post("/create/")
 def create_lokasi_bahan_kimia(
-    request: LokasiBahanKimiaRequest,
+    request: LokasiBahanKimia,
     session: Session = Depends(get_session), 
     ):
     
@@ -42,16 +30,18 @@ def create_lokasi_bahan_kimia(
     return RedirectResponse(url="/lokasi-bahan-kimia", status_code=303)
     return RedirectResponse(url="/lokasi_bahan_kimia/list_lokasi_bahan_kimia", status_code=303)
 
+
 # Endpoint untuk membaca semua Lokasi Bahan Kimia
-@router.get("/read_lokasi_bahan_kimia/")
+@router.get("/read/")
 def read_lokasi_bahan_kimia(session: Session = Depends(get_session)):
     lokasi_bahan_kimia = session.exec(select(LokasiBahanKimia)).all()
     return lokasi_bahan_kimia
 
+
 # Endpoint untuk memperbarui Lokasi Bahan Kimia
 @router.post("/update/{id}")
 def update_lokasi_bahan_kimia(
-    request: LokasiBahanKimiaRequest,
+    request: LokasiBahanKimia,
     id: int, 
     session: Session = Depends(get_session),
     ):
@@ -77,6 +67,7 @@ def update_lokasi_bahan_kimia(
     # return db_lokasi_bahan_kimia
     return RedirectResponse(url="/lokasi_bahan_kimia/list_lokasi_bahan_kimia", status_code=303)
 
+
 # Endpoint untuk menghapus Lokasi Bahan Kimia
 @router.post("/delete/{id}")
 def delete_lokasi_bahan_kimia(
@@ -92,6 +83,7 @@ def delete_lokasi_bahan_kimia(
     session.commit()
     
     return RedirectResponse(url="/lokasi_bahan_kimia/list_lokasi_bahan_kimia", status_code=303)
+
 
 @router.get("/list_lokasi_bahan_kimia/")
 def list_lokasi_bahan_kimia(
@@ -128,9 +120,6 @@ def list_lokasi_bahan_kimia(
     
     # Menghitung jumlah halaman
     total_pages = (total_data + limit - 1) // limit  # Membulatkan ke atas
-    
-    # Memanggil list departement
-    departement_list = session.exec(select(Departement)).all()
 
     # Mengembalikan data dan pagination
     return templates.TemplateResponse("list_lokasi_bahan_kimia.html", {
@@ -142,6 +131,4 @@ def list_lokasi_bahan_kimia(
             "total_data": total_data
         },
         "search_query": search, # Menyertakan query pencarian dalam template
-        "departement_list": {
-            'data': departement_list}
     })

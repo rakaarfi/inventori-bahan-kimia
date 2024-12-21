@@ -3,10 +3,11 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
 from config.database import create_db_and_tables, drop_table
-from routes.departement import router as departement_router
 from routes.index import router as index_router
 from routes.data_pabrik_pembuat import router as data_pabrik_pembuat_router
 from routes.lokasi_bahan_kimia import router as lokasi_bahan_kimia_router
+from routes.data_bahan_kimia import router as data_bahan_kimia_router
+from routes.data_penerimaan_penggunaan import router as data_penerimaan_penggunaan_router
 
 
 app = FastAPI()
@@ -33,10 +34,12 @@ def on_startup():
     create_db_and_tables()
 
 # Menambahkan router ke aplikasi FastAPI
-app.include_router(departement_router, prefix="/departement", tags=["Departemen"])
+app.include_router(index_router, prefix="", tags=["Index"])
 
 app.include_router(lokasi_bahan_kimia_router, prefix="/lokasi_bahan_kimia", tags=["Lokasi Bahan Kimia"])
 
 app.include_router(data_pabrik_pembuat_router, prefix="/data_pabrik_pembuat", tags=["Data Pabrik Pembuat"])
 
-app.include_router(index_router, prefix="", tags=["Index"])
+app.include_router(data_bahan_kimia_router, prefix="/data_bahan_kimia", tags=["Data Bahan Kimia"])
+
+app.include_router(data_penerimaan_penggunaan_router, prefix="/data_penerimaan_penggunaan", tags=["Penerimaan Penggunaan"])

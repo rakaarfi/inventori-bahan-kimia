@@ -32,7 +32,7 @@
 
                     <!-- Kolom untuk input data -->
                     <td>
-                        <form id='update-data-pabrik-pembuat'
+                        <form id="update-location-{{ data.id }}"
                             action="/data_pabrik_pembuat/update/{{ data.id }}" method="post"
                             style="display:inline;">
                             <input type="text" name="name" value="{{ data.name }}" required />
@@ -51,7 +51,9 @@
 
                     <!-- Kolom untuk tombol Edit dan Delete -->
                     <td>
-                        <button type="submit" class="btn btn-warning" form="update-data-pabrik-pembuat">Edit</button>
+                        <button type="submit" class="btn btn-warning edit-button"  data-id="{{ data.id }}">
+                            Edit
+                        </button>
 
                         <form action="/data_pabrik_pembuat/delete/{{ data.id }}" method="post"
                             style="display:inline;">
@@ -81,5 +83,42 @@
 
     </div>
 </div>
+
+<script>
+    document.addEventListener('click', async function (event) {
+        if (event.target.classList.contains('edit-button')) {
+            const button = event.target;
+            const dataId = button.getAttribute('data-id');
+            const form = document.getElementById(`update-location-${dataId}`);
+            const formData = new FormData(form);
+            const updatedData = Object.fromEntries(formData.entries());
+    
+            console.log('Sending Updated Data:', updatedData);
+    
+            try {
+                const response = await fetch(`/data_pabrik_pembuat/update/${dataId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(updatedData),
+                });
+    
+                if (response.ok) {
+                    alert('Data berhasil disimpan!');
+                    window.location.href = '/data_pabrik_pembuat/list_data_pabrik_pembuat/';
+                } else {
+                    const errorData = await response.json();
+                    console.error('Error Response:', errorData);
+                    alert(`Gagal menyimpan data: ${errorData.detail || 'Kesalahan tidak diketahui'}`);
+                }
+            } catch (error) {
+                alert('Terjadi kesalahan saat menyimpan data. Mohon coba lagi.');
+                console.error('Network or Server Error:', error);
+            }
+        }
+    });
+    
+</script>
 
 {% endblock %}

@@ -5,47 +5,113 @@
     <h1>Data Bahan Kimia</h1>
 </header>
 <div class="container-form">
-    <form action="" method="post">
+    <form id="bahan-kimia-form">
         <table>
             <tr>
-                <td><label for="ruang">Ruang:</label></td>
-                <td><input type="text" id="ruang" name="ruang" class="firsts-row"></td>
+                <td><label for="room">Ruang:</label></td>
+                <td>
+                    <select name="id_location" id="room">
+                        <option value="" disabled selected>Pilih Ruang</option>
+                        {% for lokasi in lokasi_bahan_kimia.data %}
+                            <option value="{{ lokasi.id }}">{{ lokasi.room }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
             </tr>
             <tr>
-                <td><label for="nama-bahan-kimia">Nama Bahan Kimia:</label></td>
-                <td><input type="text" id="nama-bahan-kimia" name="nama-bahan-kimia" class="firsts-row"></td>
+                <td><label for="name">Nama Bahan Kimia:</label></td>
+                <td><input type="text" id="name" name="name" class="firsts-row"></td>
             </tr>
             <tr>
-                <td><label for="nama-dagang">Nama Dagang:</label></td>
-                <td><input type="text" id="nama-dagang" name="bangunan" class="firsts-row"></td>
+                <td><label for="trade_name">Nama Dagang:</label></td>
+                <td><input type="text" id="trade_name" name="trade_name" class="firsts-row"></td>
             </tr>
             <tr>
-                <td><label for="rumus-kimia">Rumus Kimia:</label></td>
-                <td><input type="text" id="rumus-kimia" name="rumus-kimia" class="firsts-row"></td>
+                <td><label for="chemical_formula">Rumus Kimia:</label></td>
+                <td><input type="text" id="chemical_formula" name="chemical_formula" class="firsts-row"></td>
             </tr>
             <tr>
-                <td><label for="pabrik-pembuat">Pabrik Pembuat:</label></td>
-                <td><input type="text" id="pabrik-pembuat" name="pabrik-pembuat" class="firsts-row"></td>
+                <td><label for="factory_name">Pabrik Pembuat:</label></td>
+                <td>
+                    <select name="id_factory" id="factory_name">
+                        <option value="" disabled selected>Pilih Pabrik</option>
+                        {% for pabrik in data_pabrik_pembuat.data %}
+                            <option value="{{ pabrik.id }}">{{ pabrik.name }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
             </tr>
             <tr>
-                <td><label for="karakteristik">Karakteristik:</label></td>
-                <td><input type="text" id="karakteristik" name="karakteristik" class="firsts-row"></td>
+                <td><label for="characteristic">Karakteristik:</label></td>
+                <td>
+                    <select name="characteristic" id="characteristic" required>
+                        <option value="" disabled selected>Pilih Karakteristik</option>
+                        <option value="Flammable">Flammable</option>
+                        <option value="Toxic">Toxic</option>
+                        <option value="Corrosive">Corrosive</option>
+                        <option value="Explosive">Explosive</option>
+                        <option value="Carcinogen">Carcinogen</option>
+                        <option value="Iritating">Iritating</option>
+                    </select>
+                </td>
             </tr>
             <tr>
-                <td><label for="jumlah-max">Jumlah Inventori Maksimal:</label></td>
+                <td><label for="max_amount">Jumlah Inventori Maksimal:</label></td>
                 <td>
                     <div class="flex-row">
-                        <input type="text" id="jumlah-max" name="jumlah-max" class="last-row">
-                        <input type="text" id="satuan" name="satuan" placeholder="Satuan" class="last-row">
+                        <input type="number" step="any" id="max_amount" name="max_amount" class="last-row" required>
+                        <input type="text" id="unit" name="unit" placeholder="Satuan" class="last-row" required>
                     </div>
                 </td>
             </tr>
             <tr>
-                <td colspan="2"><button class="submit-button btn-primary" type="submit" value="Submit">Submit</button>
+                <td><label for="description">Keterangan:</label></td>
+                <td>
+                    <textarea name="description" id="description" required></textarea>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <button class="submit-button btn-primary" type="submit" value="Submit"
+                        id="submitButton">Submit</button>
                 </td>
             </tr>
         </table>
     </form>
-
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById('bahan-kimia-form').addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            const formData = new FormData(document.getElementById('bahan-kimia-form'));
+            const data = Object.fromEntries(formData);
+
+            parseInt(data.max_amount);
+
+            try {
+                const response = await fetch('/data_bahan_kimia/create/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                });
+
+                if (response.ok) {
+                    alert('Data berhasil disimpan!');
+                    window.location.href = '/data_bahan_kimia/';
+                } else {
+                    const errorData = await response.json();
+                    alert(`Gagal menyimpan data: ${errorData.detail}`);
+                }
+            } catch (error) {
+                alert('Terjadi kesalahan saat menyimpan data.');
+                console.error(error);
+            }
+        });
+    });
+</script>
+
 {% endblock %}

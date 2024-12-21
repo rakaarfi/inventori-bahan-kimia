@@ -1,5 +1,5 @@
 from sqlmodel import create_engine, SQLModel, Session
-from models.models import DataPabrikPembuat, Departement, LokasiBahanKimia  # Import model Anda
+from models.models import DataPabrikPembuat, LokasiBahanKimia, DataBahanKimia, DataPenerimaanPenggunaan
 
 # Konfigurasi database SQLite
 sqlite_file_name = "database.db"
@@ -9,9 +9,10 @@ engine = create_engine(sqlite_url, connect_args=connect_args)
 
 # Fungsi untuk menghapus tabel
 def drop_table():
-    DataPabrikPembuat.__table__.drop(bind=engine)
-    Departement.__table__.drop(bind=engine)
+    # DataPabrikPembuat.__table__.drop(bind=engine)
     # LokasiBahanKimia.__table__.drop(bind=engine)
+    # DataBahanKimia.__table__.drop(bind=engine)
+    DataPenerimaanPenggunaan.__table__.drop(bind=engine)
     print("Tabel telah dihapus.")
 
 # Fungsi untuk membuat database dan tabel
