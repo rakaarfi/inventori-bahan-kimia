@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Form, Request
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sqlmodel import select, Session
+from sqlmodel import select, Session, func
 
 from models.models import DataPabrikPembuat
 from config.database import get_session
@@ -90,31 +90,36 @@ def list_data_pabrik_pembuat(
     # Hitung offset berdasarkan halaman yang diminta
     offset = (page - 1) * limit
 
-    # Query untuk mencari data dengan pencarian di nama, alamat, atau telepon
-    query = select(DataPabrikPembuat).offset(offset).limit(limit)
+    # Query untuk menampilkan data DataPabrikPembuat
+    query = select(DataPabrikPembuat)
     
-    condition = (
-        DataPabrikPembuat.name.ilike(f'%{search}%') |
-        DataPabrikPembuat.address.ilike(f'%{search}%') |
-        DataPabrikPembuat.city.ilike(f'%{search}%') |
-        DataPabrikPembuat.zipcode.ilike(f'%{search}%') |
-        DataPabrikPembuat.province.ilike(f'%{search}%') |
-        DataPabrikPembuat.contact_person.ilike(f'%{search}%') |
-        DataPabrikPembuat.phone.ilike(f'%{search}%') |
-        DataPabrikPembuat.extension.ilike(f'%{search}%') |
-        DataPabrikPembuat.mobile.ilike(f'%{search}%') |
-        DataPabrikPembuat.email.ilike(f'%{search}%') |
-        DataPabrikPembuat.description.ilike(f'%{search}%')
-    )
-    
+    # Filter berdasarkan pencarian
     if search:
+        condition = (
+            DataPabrikPembuat.name.ilike(f'%{search}%') |
+            DataPabrikPembuat.address.ilike(f'%{search}%') |
+            DataPabrikPembuat.city.ilike(f'%{search}%') |
+            DataPabrikPembuat.zipcode.ilike(f'%{search}%') |
+            DataPabrikPembuat.province.ilike(f'%{search}%') |
+            DataPabrikPembuat.contact_person.ilike(f'%{search}%') |
+            DataPabrikPembuat.phone.ilike(f'%{search}%') |
+            DataPabrikPembuat.extension.ilike(f'%{search}%') |
+            DataPabrikPembuat.mobile.ilike(f'%{search}%') |
+            DataPabrikPembuat.email.ilike(f'%{search}%') |
+            DataPabrikPembuat.description.ilike(f'%{search}%')
+        )
         query = query.where(condition)
+        
+    # Pagination: Ambil data sesuai offset dan limit
+    paginated_query = query.offset(offset).limit(limit)
     
     # Ambil data dengan pagination berdarsarkan query
-    data = session.exec(query).all()
+    data = session.exec(paginated_query).all()
     
     # Hitung total jumlah data yang sesuai dengan query pencarian
-    total_data = len(session.exec(select(DataPabrikPembuat).where(condition)).all())
+    query_count = select(func.count()).select_from(query.subquery())
+    result_count = session.exec(query_count)
+    total_data = result_count.one()
     
     # Menghitung jumlah halaman
     total_pages = (total_data + limit - 1) // limit  # Membulatkan ke atas
@@ -125,8 +130,7 @@ def list_data_pabrik_pembuat(
         "list_data_pabrik_pembuat": {
             "data": data,
             "page": page,
-            "total_pages": total_pages,
-            "total_data": total_data
-        },
+            "total_pages": total_pages        
+            },
         "search_query": search # Menyertakan query pencarian dalam template
     })

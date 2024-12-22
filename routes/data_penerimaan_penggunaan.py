@@ -135,7 +135,6 @@ def list_data_penerimaan_penggunaan(
                 "data": data,
                 "page": page,
                 "total_pages": total_pages,
-                "total_data": total_data
             },
             "data_bahan_kimia": {
                 "data": data_bahan_kimia},

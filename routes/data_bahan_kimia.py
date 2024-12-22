@@ -83,8 +83,6 @@ def list_data_bahan_kimia(
     limit: int = 10, search: str = '', 
     session: Session = Depends(get_session)):
     
-    start = time.time()
-    
     # Hitung offset berdasarkan halaman yang diminta
     offset = (page - 1) * limit
 
@@ -122,19 +120,23 @@ def list_data_bahan_kimia(
 
     # Hitung total data yang sesuai dengan pencarian
     query_count = select(func.count()).select_from(query.subquery())
-    # SELECT COUNT(*) FROM (subquery)
-    # atau
-    # SELECT COUNT(*) FROM (
-    #     SELECT ... FROM ... WHERE ...
-    # )
-    # Membuat query untuk menghitung jumlah total baris dari hasil subquery
-    
+    """ 
+        SELECT COUNT(*) FROM (subquery)
+        atau
+        SELECT COUNT(*) FROM (
+            SELECT ... FROM ... WHERE ...
+        )
+        Membuat query untuk menghitung jumlah total baris dari hasil subquery
+    """
     result_count = session.exec(query_count)
-    # Mengeksekusi query COUNT ke database dan mengembalikan hasil sebagai objek ScalarResult.
-
+    """
+        Mengeksekusi query COUNT ke database dan mengembalikan hasil sebagai objek ScalarResult.
+    """
     total_data = result_count.one()
-    # Mengambil hasil tunggal (jumlah total baris) dari ScalarResult. 
-    # Dalam konteks COUNT, hasilnya selalu berupa satu angka.
+    """
+        Mengambil hasil tunggal (jumlah total baris) dari ScalarResult. 
+        Dalam konteks COUNT, hasilnya selalu berupa satu angka.
+    """
     
     # Menghitung jumlah halaman
     total_pages = (total_data + limit - 1) // limit  # Membulatkan ke atas
@@ -145,10 +147,6 @@ def list_data_bahan_kimia(
     # Memanggil Data lokasi bahan kimia dan data pabrik pembuat
     lokasi_bahan_kimia = session.exec(select(LokasiBahanKimia)).all()
     data_pabrik_pembuat = session.exec(select(DataPabrikPembuat)).all()
-
-    # Menghitung waktu Eksekusi
-    end = time.time()
-    print(f"Time: {end - start}")
     
     return templates.TemplateResponse("list_data_bahan_kimia.html", {
             "request": request, 

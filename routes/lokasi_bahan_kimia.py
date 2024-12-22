@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Form, Request
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
-from sqlmodel import select, Session
+from sqlmodel import select, Session, func
 
 from models.models import LokasiBahanKimia
 from config.database import get_session
@@ -94,29 +94,34 @@ def list_lokasi_bahan_kimia(
     # Hitung offset berdasarkan halaman yang diminta
     offset = (page - 1) * limit
 
-    # Query untuk mencari data dengan pencarian di nama, alamat, atau telepon
-    query = select(LokasiBahanKimia).offset(offset).limit(limit)
+    # Query untuk menampilkan data LokasiBahanKimia
+    query = select(LokasiBahanKimia)
     
-    condition = (
-        LokasiBahanKimia.room.ilike(f'%{search}%') |
-        LokasiBahanKimia.location.ilike(f'%{search}%') |
-        LokasiBahanKimia.building.ilike(f'%{search}%') |
-        LokasiBahanKimia.department_name.ilike(f'%{search}%') |
-        LokasiBahanKimia.contact_person.ilike(f'%{search}%') |
-        LokasiBahanKimia.phone.ilike(f'%{search}%') |
-        LokasiBahanKimia.extension.ilike(f'%{search}%') |
-        LokasiBahanKimia.mobile.ilike(f'%{search}%') |
-        LokasiBahanKimia.email.ilike(f'%{search}%')
-    )
-    
+    # Filter berdasarkan pencarian
     if search:
+        condition = (
+            LokasiBahanKimia.room.ilike(f'%{search}%') |
+            LokasiBahanKimia.location.ilike(f'%{search}%') |
+            LokasiBahanKimia.building.ilike(f'%{search}%') |
+            LokasiBahanKimia.department_name.ilike(f'%{search}%') |
+            LokasiBahanKimia.contact_person.ilike(f'%{search}%') |
+            LokasiBahanKimia.phone.ilike(f'%{search}%') |
+            LokasiBahanKimia.extension.ilike(f'%{search}%') |
+            LokasiBahanKimia.mobile.ilike(f'%{search}%') |
+            LokasiBahanKimia.email.ilike(f'%{search}%')
+        )
         query = query.where(condition)
+        
+    # Paginated: Ambil data sesuai offset dan limit
+    paginated_query = query.offset(offset).limit(limit)
     
     # Ambil data dengan pagination berdarsarkan query
-    data = session.exec(query).all()
+    data = session.exec(paginated_query).all()
     
     # Hitung total jumlah data yang sesuai dengan query pencarian
-    total_data = len(session.exec(select(LokasiBahanKimia).where(condition)).all())
+    query_count = select(func.count()).select_from(query.subquery())
+    result_count = session.exec(query_count)
+    total_data = result_count.one()
     
     # Menghitung jumlah halaman
     total_pages = (total_data + limit - 1) // limit  # Membulatkan ke atas
@@ -127,8 +132,18 @@ def list_lokasi_bahan_kimia(
         "list_lokasi_bahan_kimia": {
             "data": data,
             "page": page,
-            "total_pages": total_pages,
-            "total_data": total_data
+            "total_pages": total_pages
         },
         "search_query": search, # Menyertakan query pencarian dalam template
     })
+    
+    # return JSONResponse(content={
+    #     "request": request,
+    #     "list_lokasi_bahan_kimia": {
+    #         "data": data,
+    #         "page": page,
+    #         "total_pages": total_pages,
+    #         "total_data": total_data
+    #     },
+    #     "search_query": search
+    # })
