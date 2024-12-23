@@ -112,8 +112,22 @@ def list_data_penerimaan_penggunaan(
         query = query.where(condition)
     
     # Pagination: Ambil data dengan limit dan offset
-    query = query.offset(offset).limit(limit)
-    data = session.exec(query).all()
+    paginated_query = query.offset(offset).limit(limit)
+    raw_data = session.exec(paginated_query).all()
+    
+    # Format data ke JSON-friendly format
+    data = []
+    for chemical_material_name, penerimaan_penggunaan in raw_data:
+        data.append({
+            "id": penerimaan_penggunaan.id,
+            "date": penerimaan_penggunaan.date,
+            "transaction_type": penerimaan_penggunaan.transaction_type,
+            "id_chemical_material": penerimaan_penggunaan.id_chemical_material,
+            "amount": penerimaan_penggunaan.amount,
+            "unit": penerimaan_penggunaan.unit,
+            "description": penerimaan_penggunaan.description,
+            "name": chemical_material_name,
+        })
     
     # Hitung total data yang sesuai dengan pencarian
     query_count = select(func.count()).select_from(query.subquery())
@@ -131,13 +145,24 @@ def list_data_penerimaan_penggunaan(
     
     if 'text/html' in request.headers['Accept']:
         return templates.TemplateResponse("list_data_penerimaan_penggunaan.html",{
-                "request": request,
-                "list_data_penerimaan_penggunaan": {
-                    "data": data,
-                    "page": page,
-                    "total_pages": total_pages,
-                },
-                "data_bahan_kimia": {
-                    "data": data_bahan_kimia},
-                "transactions_type": transactions_type
-            })
+            "request": request,
+            "list_data_penerimaan_penggunaan": {
+                "data": data,
+                "page": page,
+                "total_pages": total_pages,
+            },
+            "data_bahan_kimia": {
+                "data": data_bahan_kimia},
+            "transactions_type": transactions_type
+        })
+        
+    return {
+        "list_data_penerimaan_penggunaan": {
+            "data": data,
+            "page": page,
+            "total_pages": total_pages,
+        },
+        "data_bahan_kimia": {
+            "data": data_bahan_kimia},
+        "transactions_type": transactions_type
+    }
