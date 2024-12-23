@@ -74,8 +74,6 @@ def delete_data_bahan_kimia(
     
     return RedirectResponse(url="/data_bahan_kimia", status_code=303)
 
-import time
-
 # Endpoint untuk membaca daftar Data Bahan Kimia
 @router.get("/list_data_bahan_kimia/")
 def list_data_bahan_kimia(
@@ -116,8 +114,26 @@ def list_data_bahan_kimia(
 
     # Pagination: Ambil data sesuai offset dan limit
     paginated_query = query.offset(offset).limit(limit)
-    data = session.exec(paginated_query).all()
+    raw_data = session.exec(paginated_query).all()
 
+    # Format data ke JSON-friendly format
+    data = []
+    for factory_name, location_room, bahan_kimia in raw_data:
+        data.append({
+            "id": bahan_kimia.id,
+            "name": bahan_kimia.name,
+            "trade_name": bahan_kimia.trade_name,
+            "chemical_formula": bahan_kimia.chemical_formula,
+            "characteristic": bahan_kimia.characteristic,
+            "max_amount": bahan_kimia.max_amount,
+            "unit": bahan_kimia.unit,
+            "description": bahan_kimia.description,
+            "id_factory": bahan_kimia.id_factory,
+            "id_location": bahan_kimia.id_location,
+            "factory_name": factory_name,
+            "location_room": location_room,
+        })
+    
     # Hitung total data yang sesuai dengan pencarian
     query_count = select(func.count()).select_from(query.subquery())
     """ 
@@ -148,13 +164,28 @@ def list_data_bahan_kimia(
     lokasi_bahan_kimia = session.exec(select(LokasiBahanKimia)).all()
     data_pabrik_pembuat = session.exec(select(DataPabrikPembuat)).all()
     
-    return templates.TemplateResponse("list_data_bahan_kimia.html", {
-            "request": request, 
-            "list_data_bahan_kimia": {
+    if 'text/html' in request.headers['Accept']:
+        return templates.TemplateResponse("list_data_bahan_kimia.html", {
+                "request": request, 
+                "list_data_bahan_kimia": {
+                    "data": data,
+                    "page": page,
+                    "total_pages": total_pages,
+                    "total_data": total_data
+                },
+                "search_query": search,
+                "lokasi_bahan_kimia": {
+                    "data": lokasi_bahan_kimia}, 
+                "data_pabrik_pembuat": {
+                    "data": data_pabrik_pembuat},
+                "characteristics": characteristics
+            })
+    
+    return {
+        "list_data_bahan_kimia": {
                 "data": data,
                 "page": page,
                 "total_pages": total_pages,
-                "total_data": total_data
             },
             "search_query": search,
             "lokasi_bahan_kimia": {
@@ -162,4 +193,4 @@ def list_data_bahan_kimia(
             "data_pabrik_pembuat": {
                 "data": data_pabrik_pembuat},
             "characteristics": characteristics
-        })
+    }
