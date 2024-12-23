@@ -37,7 +37,6 @@ def read_lokasi_bahan_kimia(session: Session = Depends(get_session)):
     lokasi_bahan_kimia = session.exec(select(LokasiBahanKimia)).all()
     return lokasi_bahan_kimia
 
-
 # Endpoint untuk memperbarui Lokasi Bahan Kimia
 @router.post("/update/{id}")
 def update_lokasi_bahan_kimia(
@@ -126,24 +125,24 @@ def list_lokasi_bahan_kimia(
     # Menghitung jumlah halaman
     total_pages = (total_data + limit - 1) // limit  # Membulatkan ke atas
 
-    # Mengembalikan data dan pagination
-    return templates.TemplateResponse("list_lokasi_bahan_kimia.html", {
-        "request": request,
+
+    if 'text/html' in request.headers['Accept']:
+        # Mengembalikan data dan pagination
+        return templates.TemplateResponse("list_lokasi_bahan_kimia.html", {
+            "request": request,
+            "list_lokasi_bahan_kimia": {
+                "data": data,
+                "page": page,
+                "total_pages": total_pages
+            },
+            "search_query": search
+        })
+    
+    return {
         "list_lokasi_bahan_kimia": {
             "data": data,
             "page": page,
-            "total_pages": total_pages
+            "total_pages": total_pages,
         },
-        "search_query": search, # Menyertakan query pencarian dalam template
-    })
-    
-    # return JSONResponse(content={
-    #     "request": request,
-    #     "list_lokasi_bahan_kimia": {
-    #         "data": data,
-    #         "page": page,
-    #         "total_pages": total_pages,
-    #         "total_data": total_data
-    #     },
-    #     "search_query": search
-    # })
+        "search_query": search
+    }
