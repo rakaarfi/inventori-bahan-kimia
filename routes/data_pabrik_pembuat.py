@@ -124,13 +124,23 @@ def list_data_pabrik_pembuat(
     # Menghitung jumlah halaman
     total_pages = (total_data + limit - 1) // limit  # Membulatkan ke atas
     
-    # Mengembalikan data dan pagination
-    return templates.TemplateResponse("list_data_pabrik_pembuat.html", {
-        "request": request,
+    if 'text/html' in request.headers['Accept']:
+        # Mengembalikan data dan pagination
+        return templates.TemplateResponse("list_data_pabrik_pembuat.html", {
+            "request": request,
+            "list_data_pabrik_pembuat": {
+                "data": data,
+                "page": page,
+                "total_pages": total_pages        
+                },
+            "search_query": search
+        })
+    
+    return {
         "list_data_pabrik_pembuat": {
             "data": data,
             "page": page,
-            "total_pages": total_pages        
+            "total_pages": total_pages
             },
-        "search_query": search # Menyertakan query pencarian dalam template
-    })
+        "search_query": search
+    }
