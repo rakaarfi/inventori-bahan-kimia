@@ -129,14 +129,15 @@ def list_data_penerimaan_penggunaan(
     # Memanggil Data Bahan Kimia
     data_bahan_kimia = session.exec(select(DataBahanKimia)).all()
     
-    return templates.TemplateResponse("list_data_penerimaan_penggunaan.html",{
-            "request": request,
-            "list_data_penerimaan_penggunaan": {
-                "data": data,
-                "page": page,
-                "total_pages": total_pages,
-            },
-            "data_bahan_kimia": {
-                "data": data_bahan_kimia},
-            "transactions_type": transactions_type
-        })
+    if 'text/html' in request.headers['Accept']:
+        return templates.TemplateResponse("list_data_penerimaan_penggunaan.html",{
+                "request": request,
+                "list_data_penerimaan_penggunaan": {
+                    "data": data,
+                    "page": page,
+                    "total_pages": total_pages,
+                },
+                "data_bahan_kimia": {
+                    "data": data_bahan_kimia},
+                "transactions_type": transactions_type
+            })
