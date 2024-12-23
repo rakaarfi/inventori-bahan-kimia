@@ -26,7 +26,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for factory_name,location_room, data in list_data_bahan_kimia['data'] %}
+                {% for data in list_data_bahan_kimia['data'] %}
                 <tr class="data-row">
                     <td>{{ loop.index + ((list_data_bahan_kimia['page'] - 1) * 10) }}</td>
 
