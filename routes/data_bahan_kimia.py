@@ -166,26 +166,12 @@ def list_data_bahan_kimia(
     
     if 'text/html' in request.headers['Accept']:
         return templates.TemplateResponse("list_data_bahan_kimia.html", {
-                "request": request, 
-                "list_data_bahan_kimia": {
-                    "data": data,
-                    "page": page,
-                    "total_pages": total_pages,
-                    "total_data": total_data
-                },
-                "search_query": search,
-                "lokasi_bahan_kimia": {
-                    "data": lokasi_bahan_kimia}, 
-                "data_pabrik_pembuat": {
-                    "data": data_pabrik_pembuat},
-                "characteristics": characteristics
-            })
-    
-    return {
-        "list_data_bahan_kimia": {
+            "request": request, 
+            "list_data_bahan_kimia": {
                 "data": data,
                 "page": page,
                 "total_pages": total_pages,
+                "total_data": total_data
             },
             "search_query": search,
             "lokasi_bahan_kimia": {
@@ -193,4 +179,18 @@ def list_data_bahan_kimia(
             "data_pabrik_pembuat": {
                 "data": data_pabrik_pembuat},
             "characteristics": characteristics
+        })
+    
+    return {
+        "list_data_bahan_kimia": {
+            "data": data,
+            "page": page,
+            "total_pages": total_pages,
+        },
+        "search_query": search,
+        "lokasi_bahan_kimia": {
+            "data": lokasi_bahan_kimia}, 
+        "data_pabrik_pembuat": {
+            "data": data_pabrik_pembuat},
+        "characteristics": characteristics
     }
