@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Generic, TypeVar
 from sqlmodel import Field, SQLModel, Relationship
 
 
@@ -66,5 +66,36 @@ class DataPenerimaanPenggunaan(SQLModel, table=True):
     
     chemical_material: Optional[DataBahanKimia] = Relationship(back_populates="receipt_usage")
     
+    
 class DataPenerimaanPenggunaanCreate(SQLModel):
     transactions: List[dict]
+    
+    
+# Model untuk Report Inventori Bahan Kimia
+class InventoriBahanKimiaResponse(SQLModel):
+    nama_bahan: str
+    nama_pabrik: str
+    karakteristik: str
+    max_amount: int
+    unit_bahan: str
+    tanggal: str
+    jumlah: float
+    unit_penerimaan: str
+
+
+# Model untuk Report Daftar Bahan Kimia
+class DaftarBahanKimiaResponse(SQLModel):
+    nama_bahan: str
+    nama_pabrik: str
+    karakteristik: str
+    max_amount: int
+    unit_bahan: str
+    deskripsi: str
+
+T = TypeVar("T")
+
+class PaginationResponse(SQLModel, Generic[T]):
+    data: T
+    current_page: int
+    total_pages: int
+    total_data: int
