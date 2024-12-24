@@ -37,6 +37,18 @@ def read_lokasi_bahan_kimia(session: Session = Depends(get_session)):
     lokasi_bahan_kimia = session.exec(select(LokasiBahanKimia)).all()
     return lokasi_bahan_kimia
 
+# Endpoint untuk membaca semua Lokasi Bahan Kimia
+@router.get("/read/{id}")
+def read_lokasi_bahan_kimia_by_id(
+    id: int,
+    session: Session = Depends(get_session)):
+    
+    lokasi_bahan_kimia = session.exec(select(LokasiBahanKimia).where(LokasiBahanKimia.id == id)).first()
+    if lokasi_bahan_kimia is None:
+        raise HTTPException(status_code=404, detail="Lokasi Bahan Kimia tidak ditemukan")
+        
+    return lokasi_bahan_kimia
+
 # Endpoint untuk memperbarui Lokasi Bahan Kimia
 @router.post("/update/{id}")
 def update_lokasi_bahan_kimia(
