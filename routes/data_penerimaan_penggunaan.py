@@ -151,6 +151,7 @@ def list_data_penerimaan_penggunaan(
                 "page": page,
                 "total_pages": total_pages,
             },
+            "search_query": search,
             "data_bahan_kimia": {
                 "data": data_bahan_kimia},
             "transactions_type": transactions_type
@@ -162,6 +163,7 @@ def list_data_penerimaan_penggunaan(
             "page": page,
             "total_pages": total_pages,
         },
+        "search_query": search,
         "data_bahan_kimia": {
             "data": data_bahan_kimia},
         "transactions_type": transactions_type
