@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlmodel import Session, select, func
-from config.database import get_session  # Pastikan get_session mengembalikan instance Session
+from config.database import get_session
 from models.models import DataPenerimaanPenggunaan, DataBahanKimia, DataPabrikPembuat, InventoriBahanKimiaResponse, DaftarBahanKimiaResponse, PaginationResponse
 from typing import List
 from fastapi.exceptions import HTTPException
@@ -81,7 +81,6 @@ def get_inventori_bahan_kimia(
             "total_data": 0,
         }
 
-    # Return data dengan informasi pagination
     return {
         "data": data,
         "current_page": page,
@@ -121,25 +120,24 @@ def get_daftar_bahan_kimia(
         .join(DataPabrikPembuat, DataBahanKimia.id_factory == DataPabrikPembuat.id)
     )
 
-    # Tambahkan filter pencarian
+    # Search filter
     if search:
         statement = statement.where(
             DataBahanKimia.name.ilike(f"%{search}%") | 
             DataPabrikPembuat.name.ilike(f"%{search}%")
         )
 
-    # Pagination: Ambil data dengan limit dan offset
+    # Pagination
     paginated_query = statement.offset(offset).limit(limit)
     raw_data = session.exec(paginated_query).all()
 
-    # Hitung total data
+    # Count total data
     query_count = select(func.count()).select_from(statement.subquery())
     total_data = session.exec(query_count).one()
 
-    # Hitung jumlah halaman
+    # Count total pages
     total_pages = (total_data + limit - 1) // limit
 
-    # Format data
     data = [
         {
             "nama_bahan": row.nama_bahan,
@@ -160,7 +158,6 @@ def get_daftar_bahan_kimia(
             "total_data": 0,
         }
 
-    # Return data dengan informasi pagination
     return {
         "data": data,
         "current_page": page,
