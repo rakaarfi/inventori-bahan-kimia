@@ -31,6 +31,25 @@ def read_data_bahan_kimia(session: Session = Depends(get_session)):
     data_bahan_kimia = session.exec(select(DataBahanKimia)).all()
     return data_bahan_kimia
 
+# Endpoint untuk membaca Data Bahan Kimia berdasarkan ID
+@router.get("/read/{id}")
+def read_data_bahan_kimia_by_id(
+    id: int, 
+    session: Session = Depends(get_session)):
+    
+    data_bahan_kimia = session.exec(select(DataBahanKimia).where(DataBahanKimia.id == id)).first()
+    if data_bahan_kimia is None:
+        raise HTTPException(status_code=404, detail="Data Bahan Kimia tidak ditemukan")
+    
+    factory_name = session.exec(select(DataPabrikPembuat.name).where(DataPabrikPembuat.id == data_bahan_kimia.id_factory)).first()
+    location_room = session.exec(select(LokasiBahanKimia.room).where(LokasiBahanKimia.id == data_bahan_kimia.id_location)).first()
+        
+    return {
+        "data_bahan_kimia": data_bahan_kimia,
+        "factory_name": factory_name,
+        "location_room": location_room,
+    }
+
 # Endpoint untuk memperbarui Data Bahan Kimia
 @router.post("/update/{id}")
 def update_data_bahan_kimia(
@@ -187,10 +206,5 @@ def list_data_bahan_kimia(
             "page": page,
             "total_pages": total_pages,
         },
-        "search_query": search,
-        "lokasi_bahan_kimia": {
-            "data": lokasi_bahan_kimia}, 
-        "data_pabrik_pembuat": {
-            "data": data_pabrik_pembuat},
-        "characteristics": characteristics
+        "search_query": search
     }
