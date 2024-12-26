@@ -35,6 +35,18 @@ def read_data_pabrik_pembuat(session: Session = Depends(get_session)):
     data_pabrik_pembuat = session.exec(select(DataPabrikPembuat)).all()
     return data_pabrik_pembuat
 
+# Endpoint untuk membaca Data Pabrik Pembuat berdasarkan ID
+@router.get("/read/{id}")
+def read_data_pabrik_pembuat_by_id(
+    id: int, 
+    session: Session = Depends(get_session)):
+    
+    data_pabrik_pembuat = session.exec(select(DataPabrikPembuat).where(DataPabrikPembuat.id == id)).first()
+    if data_pabrik_pembuat is None:
+        raise HTTPException(status_code=404, detail="Data Pabrik Pembuat tidak ditemukan")
+        
+    return data_pabrik_pembuat
+
 # Endpoint untuk memperbarui Data Pabrik Pembuat
 @router.post("/update/{id}")
 def update_data_pabrik_pembuat(
