@@ -17,6 +17,7 @@ class LokasiBahanKimia(SQLModel, table=True):
     
     chemicals: List["DataBahanKimia"] = Relationship(back_populates="location")  # Forward Reference
 
+
 # Model untuk Data Pabrik Pembuat
 class DataPabrikPembuat(SQLModel, table=True):
     id: int = Field(default=None, primary_key=True)
@@ -65,10 +66,6 @@ class DataPenerimaanPenggunaan(SQLModel, table=True):
     description: str
     
     chemical_material: Optional[DataBahanKimia] = Relationship(back_populates="receipt_usage")
-    
-    
-class DataPenerimaanPenggunaanCreate(SQLModel):
-    transactions: List[dict]
     
     
 # Model untuk Report Inventori Bahan Kimia
