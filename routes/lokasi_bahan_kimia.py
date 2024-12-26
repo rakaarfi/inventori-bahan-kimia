@@ -27,7 +27,6 @@ def create_lokasi_bahan_kimia(
     
     # return new_lokasi_bahan_kimia
     return new_lokasi_bahan_kimia
-    return RedirectResponse(url="/lokasi-bahan-kimia", status_code=303)
     return RedirectResponse(url="/lokasi_bahan_kimia/list_lokasi_bahan_kimia", status_code=303)
 
 
@@ -37,7 +36,7 @@ def read_lokasi_bahan_kimia(session: Session = Depends(get_session)):
     lokasi_bahan_kimia = session.exec(select(LokasiBahanKimia)).all()
     return lokasi_bahan_kimia
 
-# Endpoint untuk membaca semua Lokasi Bahan Kimia
+# Endpoint untuk membaca Lokasi Bahan Kimia berdasarkan ID
 @router.get("/read/{id}")
 def read_lokasi_bahan_kimia_by_id(
     id: int,
@@ -139,7 +138,6 @@ def list_lokasi_bahan_kimia(
 
 
     if 'text/html' in request.headers['Accept']:
-        # Mengembalikan data dan pagination
         return templates.TemplateResponse("list_lokasi_bahan_kimia.html", {
             "request": request,
             "list_lokasi_bahan_kimia": {
