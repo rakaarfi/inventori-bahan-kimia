@@ -88,6 +88,32 @@ class DaftarBahanKimiaResponse(SQLModel):
     max_amount: int
     unit_bahan: str
     deskripsi: str
+    
+
+# Model untuk Report Daftar Data Bahan Kimia
+class DaftarDataBahanKimiaResponse(SQLModel):
+    nama_bahan: str
+    karakterustik: str
+    max_amount: int
+    nama_pabrik: str
+    alamat_pabrik: str
+    kota_pabrik: str
+    kodepos_pabrik: str
+    provinsi_pabrik: str
+    kontak_pabrik: str
+    telepon_pabrik: str
+    extension_pabrik: str
+    mobile_pabrik: str
+    email_pabrik: str
+    ruang_lokasi: str
+    lokasi_lokasi: str
+    bangunan_lokasi: str
+    departemen_lokasi: str
+    kontak_lokasi: str
+    telepon_lokasi: str
+    extension_lokasi: str
+    mobile_lokasi: str
+    email_lokasi: str
 
 T = TypeVar("T")
 
