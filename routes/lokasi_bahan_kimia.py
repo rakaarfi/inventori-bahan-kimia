@@ -1,9 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, Form, Request
-from fastapi.responses import RedirectResponse, JSONResponse
+from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sqlmodel import select, Session, func
+from sqlmodel import select, Session
+from typing import List
 
-from models.models import LokasiBahanKimia
+from utils.utils import paginate_query, build_pagination_response
+from models.models import LokasiBahanKimia, PaginationResponse
 from config.database import get_session
 
 
@@ -27,7 +29,6 @@ def create_lokasi_bahan_kimia(
     
     # return new_lokasi_bahan_kimia
     return new_lokasi_bahan_kimia
-    return RedirectResponse(url="/lokasi_bahan_kimia/list_lokasi_bahan_kimia", status_code=303)
 
 
 # Endpoint untuk membaca semua Lokasi Bahan Kimia
@@ -35,6 +36,7 @@ def create_lokasi_bahan_kimia(
 def read_lokasi_bahan_kimia(session: Session = Depends(get_session)):
     lokasi_bahan_kimia = session.exec(select(LokasiBahanKimia)).all()
     return lokasi_bahan_kimia
+
 
 # Endpoint untuk membaca Lokasi Bahan Kimia berdasarkan ID
 @router.get("/read/{id}")
@@ -48,6 +50,7 @@ def read_lokasi_bahan_kimia_by_id(
         
     return lokasi_bahan_kimia
 
+
 # Endpoint untuk memperbarui Lokasi Bahan Kimia
 @router.post("/update/{id}")
 def update_lokasi_bahan_kimia(
@@ -60,6 +63,7 @@ def update_lokasi_bahan_kimia(
     if db_lokasi_bahan_kimia is None:
         raise HTTPException(status_code=404, detail="Lokasi Bahan Kimia tidak ditemukan")
     
+    """
     db_lokasi_bahan_kimia.room = request.room
     db_lokasi_bahan_kimia.location = request.location
     db_lokasi_bahan_kimia.building = request.building
@@ -69,6 +73,15 @@ def update_lokasi_bahan_kimia(
     db_lokasi_bahan_kimia.extension = request.extension
     db_lokasi_bahan_kimia.mobile = request.mobile
     db_lokasi_bahan_kimia.email = request.email
+    
+    Above code is the same as below (model_dump and setattr)
+    """
+    
+    # Get a dictionary from the request that contains the updated values (excluding unset values)
+    updated_data = request.model_dump(exclude_unset=True)
+    # Update the attributes of the database model with the new values from the request
+    for key, value in updated_data.items():
+        setattr(db_lokasi_bahan_kimia, key, value)
     
     session.add(db_lokasi_bahan_kimia)
     session.commit()
@@ -95,14 +108,14 @@ def delete_lokasi_bahan_kimia(
     return RedirectResponse(url="/lokasi_bahan_kimia/list_lokasi_bahan_kimia", status_code=303)
 
 
-@router.get("/list_lokasi_bahan_kimia/")
+@router.get(
+    "/list_lokasi_bahan_kimia/",
+    response_model=PaginationResponse[List[LokasiBahanKimia]]
+)
 def list_lokasi_bahan_kimia(
     request: Request, page: int = 1, 
     limit: int = 10, search: str = '', 
     session: Session = Depends(get_session)):
-
-    # Hitung offset berdasarkan halaman yang diminta
-    offset = (page - 1) * limit
 
     # Query untuk menampilkan data LokasiBahanKimia
     query = select(LokasiBahanKimia)
@@ -122,20 +135,15 @@ def list_lokasi_bahan_kimia(
         )
         query = query.where(condition)
         
-    # Paginated: Ambil data sesuai offset dan limit
-    paginated_query = query.offset(offset).limit(limit)
+    # Paginate query
+    data, total_pages = paginate_query(
+        statement=query, 
+        session=session, 
+        limit=limit, 
+        page=page,
+    )
     
-    # Ambil data dengan pagination berdarsarkan query
-    data = session.exec(paginated_query).all()
-    
-    # Hitung total jumlah data yang sesuai dengan query pencarian
-    query_count = select(func.count()).select_from(query.subquery())
-    result_count = session.exec(query_count)
-    total_data = result_count.one()
-    
-    # Menghitung jumlah halaman
-    total_pages = (total_data + limit - 1) // limit  # Membulatkan ke atas
-
+    response = build_pagination_response(data, page, total_pages)
 
     if 'text/html' in request.headers['Accept']:
         return templates.TemplateResponse("list_lokasi_bahan_kimia.html", {
@@ -148,11 +156,4 @@ def list_lokasi_bahan_kimia(
             "search_query": search
         })
     
-    return {
-        "list_lokasi_bahan_kimia": {
-            "data": data,
-            "page": page,
-            "total_pages": total_pages,
-        },
-        "search_query": search
-    }
+    return response
