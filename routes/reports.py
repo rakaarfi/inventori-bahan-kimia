@@ -4,6 +4,7 @@ from config.database import get_session
 from models.models import DataPenerimaanPenggunaan, DataBahanKimia, DataPabrikPembuat, InventoriBahanKimiaResponse, DaftarBahanKimiaResponse, DaftarDataBahanKimiaResponse, PaginationResponse, LokasiBahanKimia
 from typing import List
 from fastapi.exceptions import HTTPException
+from utils.utils import paginate_query, build_pagination_response
 
 router = APIRouter()
 
@@ -19,14 +20,6 @@ def get_inventori_bahan_kimia(
     session: Session = Depends(get_session)
 ):
     
-    if page < 1:
-        raise HTTPException(status_code=400, detail="Page number must be greater than 0")
-    if limit < 1:
-        raise HTTPException(status_code=400, detail="Limit must be greater than 0")
-    
-    # Hitung offset berdasarkan halaman yang diminta
-    offset = (page - 1) * limit
-    
     statement = (
         select(
             DataBahanKimia.name.label("nama_bahan"),
@@ -38,9 +31,16 @@ def get_inventori_bahan_kimia(
             DataPenerimaanPenggunaan.amount.label("jumlah"),
             DataPenerimaanPenggunaan.unit.label("unit_penerimaan"),
         )
-        .join(DataPenerimaanPenggunaan, DataPenerimaanPenggunaan.id_chemical_material == DataBahanKimia.id)
-        .join(DataPabrikPembuat, DataBahanKimia.id_factory == DataPabrikPembuat.id)
+        .join(DataBahanKimia.factory)
+        .join(DataBahanKimia.receipt_usage)
     )
+    """
+    SELECT 
+        COLUMNS
+    FROM databahankimia #-> Because the first query is column from databahankimia <-#
+    JOIN datapabrikpembuat ON databahankimia.id_factory = datapabrikpembuat.id
+    JOIN datapenerimaanpenggunaan ON databahankimia.id = datapenerimaanpenggunaan.id_chemical_material
+    """
     
     # Tambahkan filter pencarian
     if search:
@@ -49,16 +49,8 @@ def get_inventori_bahan_kimia(
             DataPabrikPembuat.name.ilike(f"%{search}%")
         )
         
-    # Pagination: Ambil data dengan limit dan offset
-    paginated_query = statement.offset(offset).limit(limit)
-    raw_data = session.exec(paginated_query).all()
-
-    # Hitung total data
-    query_count = select(func.count()).select_from(statement.subquery())
-    total_data = session.exec(query_count).one()
-
-    # Hitung jumlah halaman
-    total_pages = (total_data + limit - 1) // limit
+    # Paginate query
+    raw_data, total_pages = paginate_query(statement, session, page, limit)
     
     data = [
         {
@@ -82,12 +74,8 @@ def get_inventori_bahan_kimia(
             "total_data": 0,
         }
 
-    return {
-        "data": data,
-        "current_page": page,
-        "total_pages": total_pages,
-        "total_data": total_data,
-    }
+    # Return standardized pagination response
+    return build_pagination_response(data, page, total_pages)
 
 # Endpoint untuk membaca daftar Bahan Kimia
 @router.get(
@@ -100,14 +88,6 @@ def get_daftar_bahan_kimia(
     search: str = "", 
     session: Session = Depends(get_session)
 ):
-    
-    if page < 1:
-        raise HTTPException(status_code=400, detail="Page number must be greater than 0")
-    if limit < 1:
-        raise HTTPException(status_code=400, detail="Limit must be greater than 0")
-    
-    # Hitung offset berdasarkan halaman yang diminta
-    offset = (page - 1) * limit
 
     # Query utama
     statement = (
@@ -119,7 +99,7 @@ def get_daftar_bahan_kimia(
             DataBahanKimia.unit.label("unit_bahan"),
             DataBahanKimia.description.label("deskripsi")
         )
-        .join(DataPabrikPembuat, DataBahanKimia.id_factory == DataPabrikPembuat.id)
+        .join(DataBahanKimia.factory)
     )
 
     # Search filter
@@ -129,16 +109,8 @@ def get_daftar_bahan_kimia(
             DataPabrikPembuat.name.ilike(f"%{search}%")
         )
 
-    # Pagination
-    paginated_query = statement.offset(offset).limit(limit)
-    raw_data = session.exec(paginated_query).all()
-
-    # Count total data
-    query_count = select(func.count()).select_from(statement.subquery())
-    total_data = session.exec(query_count).one()
-
-    # Count total pages
-    total_pages = (total_data + limit - 1) // limit
+    # Paginate query
+    raw_data, total_pages = paginate_query(statement, session, page, limit)
 
     data = [
         {
@@ -160,12 +132,8 @@ def get_daftar_bahan_kimia(
             "total_data": 0,
         }
 
-    return {
-        "data": data,
-        "current_page": page,
-        "total_pages": total_pages,
-        "total_data": total_data,
-    }
+    # Return standardized pagination response
+    return build_pagination_response(data, page, total_pages)
     
 # Endpoint untuk membaca report Data Bahan Kimia
 @router.get(
@@ -178,14 +146,7 @@ def get_report_data_bahan_kimia(
     search: str = "", 
     session: Session = Depends(get_session)
 ):
-    if page < 1:
-        raise HTTPException(status_code=400, detail="Page number must be greater than 0")
-    if limit < 1:
-        raise HTTPException(status_code=400, detail="Limit must be greater than 0")
-    
-    # Hitung offset berdasarkan halaman yang diminta
-    offset = (page - 1) * limit
-    
+
     statement = (
         select(
             DataBahanKimia.name.label("nama_bahan_kimia"),
@@ -211,8 +172,8 @@ def get_report_data_bahan_kimia(
             LokasiBahanKimia.mobile.label("mobile_lokasi"),
             LokasiBahanKimia.email.label("email_lokasi"),
         )
-        .join(DataPabrikPembuat, DataBahanKimia.id_factory == DataPabrikPembuat.id)
-        .join(LokasiBahanKimia, DataBahanKimia.id_location == LokasiBahanKimia.id)
+        .join(DataBahanKimia.factory)
+        .join(DataBahanKimia.location)
     )
     
     if search:
@@ -225,16 +186,8 @@ def get_report_data_bahan_kimia(
             LokasiBahanKimia.department_name.ilike(f"%{search}%")
         )
     
-    # Pagination: Ambil data dengan limit dan offset
-    paginated_query = statement.offset(offset).limit(limit)
-    raw_data = session.exec(paginated_query).all()
-
-    # Hitung total data
-    query_count = select(func.count()).select_from(statement.subquery())
-    total_data = session.exec(query_count).one()
-
-    # Hitung jumlah halaman
-    total_pages = (total_data + limit - 1) // limit
+    # Paginate query
+    raw_data, total_pages = paginate_query(statement, session, page, limit)
     
     data = [
         {
@@ -270,13 +223,7 @@ def get_report_data_bahan_kimia(
             "total_data": 0,
             "total_pages": 0,
             "current_page": page,
-            "limit": limit,
         }
     
-    return {
-        "data": data,
-        "total_data": total_data,
-        "total_pages": total_pages,
-        "current_page": page,
-        "limit": limit,
-    }
+    # Return standardized pagination response
+    return build_pagination_response(data, page, total_pages)
