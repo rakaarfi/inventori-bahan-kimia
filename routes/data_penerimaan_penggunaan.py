@@ -1,11 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, Form, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
+from sqlmodel import select, Session, func, SQLModel
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sqlmodel import select, Session, func, SQLModel
-
 from typing import List, Optional
 
-from models.models import DataPenerimaanPenggunaan, DataBahanKimia
+from models.models import DataPenerimaanPenggunaan, DataBahanKimia, PaginationResponse
+from utils.utils import paginate_query, build_pagination_response
 from config.database import get_session
 
 # Define a new model to allow the creation of multiple entries in a single API request
@@ -72,7 +72,6 @@ def create_data_penerimaan_penggunaan(
     session.commit()
     return created_data
 
-    return RedirectResponse(url="/data_penerimaan_penggunaan/list_data_penerimaan_penggunaan", status_code=303)
 
 @router.get("/total/{id_chemical_material}")
 def get_total_inventory(
@@ -97,11 +96,13 @@ def get_total_inventory(
     )
     return {"total_received": total_received, "total_used": total_used}
 
+
 # Endpoint untuk membaca Data Penerimaan Penggunaan
 @router.get("/read/")
 def read_data_penerimaan_penggunaan(session: Session = Depends(get_session)):
     data_penerimaan_penggunaan = session.exec(select(DataPenerimaanPenggunaan)).all()
     return data_penerimaan_penggunaan
+
 
 # Endpoint untuk membaca Data Penerimaan Penggunaan berdasarkan ID
 @router.get("/read/{id}")
@@ -120,6 +121,7 @@ def read_data_penerimaan_penggunaan_by_id(
         "chemical_material_name": chemical_material_name,
     }
 
+
 # Endpoint untuk mengupdate Data Penerimaan Penggunaan    
 @router.post("/update/{id}")
 def update_data_penerimaan_penggunaan(
@@ -132,19 +134,16 @@ def update_data_penerimaan_penggunaan(
     if db_data_penerimaan_penggunaan is None:
         raise HTTPException(status_code=404, detail="Data Penerimaan Penggunaan tidak ditemukan")
     
-    db_data_penerimaan_penggunaan.date = request.date
-    db_data_penerimaan_penggunaan.transaction_type = request.transaction_type
-    db_data_penerimaan_penggunaan.id_chemical_material = request.id_chemical_material
-    db_data_penerimaan_penggunaan.amount = request.amount
-    db_data_penerimaan_penggunaan.unit = request.unit
-    db_data_penerimaan_penggunaan.description = request.description
+    updated_data = request.model_dump(exclude_unset=True)
+    for key, value in updated_data.items():
+        setattr(db_data_penerimaan_penggunaan, key, value)
     
     session.add(db_data_penerimaan_penggunaan)
     session.commit()
     session.refresh(db_data_penerimaan_penggunaan)
     
-    return RedirectResponse(url="/data_penerimaan_penggunaan/list_data_penerimaan_penggunaan", status_code=303
-)
+    return RedirectResponse(url="/data_penerimaan_penggunaan/list_data_penerimaan_penggunaan", status_code=303)
+    
     
 # Endpoint untuk menghapus Data Penerimaan Penggunaan
 @router.post("/delete/{id}")
@@ -162,22 +161,22 @@ def delete_data_penerimaan_penggunaan(
     
     return RedirectResponse(url="/data_penerimaan_penggunaan/list_data_penerimaan_penggunaan", status_code=303)
 
+
 # Endpoint untuk menampilkan halaman Daftar Data Penerimaan Penggunaan
-@router.get("/list_data_penerimaan_penggunaan")
+@router.get(
+    "/list_data_penerimaan_penggunaan",
+    response_model=PaginationResponse[List[DataPenerimaanPenggunaan]],
+)
 def list_data_penerimaan_penggunaan(
     request: Request, page: int = 1, 
     limit: int = 10, search: str = '', 
     session: Session = Depends(get_session)):
     
-    # Hitung offset berdasarkan halaman yang diminta
-    offset = (page - 1) * limit
-    
     # Query untuk mencari data dengan pencarian di nama, alamat, atau telepon
     query = select(
         DataBahanKimia.name, 
         DataPenerimaanPenggunaan
-        ).join(
-            DataBahanKimia, DataBahanKimia.id == DataPenerimaanPenggunaan.id_chemical_material)
+        ).join(DataPenerimaanPenggunaan.chemical_material)
     
     # Filter berdasarkan pencarian
     if search:
@@ -192,9 +191,13 @@ def list_data_penerimaan_penggunaan(
         
         query = query.where(condition)
     
-    # Pagination: Ambil data dengan limit dan offset
-    paginated_query = query.offset(offset).limit(limit)
-    raw_data = session.exec(paginated_query).all()
+    # Paginate query
+    raw_data, total_pages = paginate_query(
+        statement=query, 
+        session=session, 
+        limit=limit, 
+        page=page,
+        )
     
     # Format data ke JSON-friendly format
     data = []
@@ -209,14 +212,8 @@ def list_data_penerimaan_penggunaan(
             "description": penerimaan_penggunaan.description,
             "name": chemical_material_name,
         })
-    
-    # Hitung total data yang sesuai dengan pencarian
-    query_count = select(func.count()).select_from(query.subquery())
-    result_count = session.exec(query_count)
-    total_data = result_count.one()
-    
-    # Hitung jumlah halaman
-    total_pages = (total_data + limit - 1) // limit
+        
+    response = build_pagination_response(data, page, total_pages)
     
     # Jenis Transaksi
     transactions_type = ["Penerimaan", "Penggunaan"]
@@ -237,12 +234,5 @@ def list_data_penerimaan_penggunaan(
                 "data": data_bahan_kimia},
             "transactions_type": transactions_type
         })
-        
-    return {
-        "list_data_penerimaan_penggunaan": {
-            "data": data,
-            "page": page,
-            "total_pages": total_pages,
-        },
-        "search_query": search
-    }
+    
+    return response
