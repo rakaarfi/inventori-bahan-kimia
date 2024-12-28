@@ -15,7 +15,8 @@ class LokasiBahanKimia(SQLModel, table=True):
     mobile: str
     email: str
     
-    chemicals: List["DataBahanKimia"] = Relationship(back_populates="location")  # Forward Reference
+    """This is a forward reference to the DataBahanKimia model"""
+    chemicals: List["DataBahanKimia"] = Relationship(back_populates="location")
 
 
 # Model untuk Data Pabrik Pembuat
@@ -33,7 +34,12 @@ class DataPabrikPembuat(SQLModel, table=True):
     email: str
     description: str
     
-    chemicals: List["DataBahanKimia"] = Relationship(back_populates="factory")  # Forward Reference
+    """
+    This establishes a relationship with the DataBahanKimia model
+    The 'chemicals' field represents a list of chemical data associated with this factory
+    The 'back_populates' attribute links this relationship to the 'factory' attribute in DataBahanKimia
+    """
+    chemicals: List["DataBahanKimia"] = Relationship(back_populates="factory")
 
 
 # Model untuk Data Bahan Kimia
@@ -49,9 +55,16 @@ class DataBahanKimia(SQLModel, table=True):
     id_factory : int = Field(foreign_key="datapabrikpembuat.id")
     id_location : int = Field(foreign_key="lokasibahankimia.id")
     
+    # The factory that produces this chemical material
     factory: Optional[DataPabrikPembuat] = Relationship(back_populates="chemicals")
+    
+    # The location where this chemical material is stored
     location: Optional[LokasiBahanKimia] = Relationship(back_populates="chemicals")
     
+    """
+    This is a reverse relationship with the DataPenerimaanPenggunaan model
+    The 'receipt_usage' field represents a list of receipt and usage data associated with this chemical material
+    """
     receipt_usage : List["DataPenerimaanPenggunaan"] = Relationship(back_populates="chemical_material")
     
     
@@ -65,11 +78,24 @@ class DataPenerimaanPenggunaan(SQLModel, table=True):
     unit: str
     description: str
     
+    """
+    The chemical material associated with this receipt or usage data
+    The 'chemical_material' field represents the chemical material that was received or used
+    The 'Relationship' attribute links this field to the 'receipt_usage' field in the DataBahanKimia model
+    The 'back_populates' attribute means that the DataBahanKimia model has a field called 'receipt_usage' that is a list of DataPenerimaanPenggunaan models
+    """
     chemical_material: Optional[DataBahanKimia] = Relationship(back_populates="receipt_usage")
-    
+
+# ======================================================
+# API Response Models (Custom Schemas for API Responses)
+# ======================================================
     
 # Model untuk Report Inventori Bahan Kimia
 class InventoriBahanKimiaResponse(SQLModel):
+    """
+    Represents the response schema for the inventory of chemical materials.
+    Used to structure the API response for endpoints requiring inventory details.
+    """
     nama_bahan: str
     nama_pabrik: str
     karakteristik: str
@@ -82,6 +108,10 @@ class InventoriBahanKimiaResponse(SQLModel):
 
 # Model untuk Report Daftar Bahan Kimia
 class DaftarBahanKimiaResponse(SQLModel):
+    """
+    Represents the response schema for the list of chemical materials.
+    Used to structure the API response for endpoints listing chemical materials.
+    """
     nama_bahan: str
     nama_pabrik: str
     karakteristik: str
@@ -92,8 +122,13 @@ class DaftarBahanKimiaResponse(SQLModel):
 
 # Model untuk Report Daftar Data Bahan Kimia
 class DaftarDataBahanKimiaResponse(SQLModel):
+    """
+    Represents the response schema for detailed reports of chemical materials.
+    This schema includes detailed information about chemical materials, 
+    manufacturers, and storage locations.
+    """
     nama_bahan: str
-    karakterustik: str
+    karakteristik: str
     max_amount: int
     nama_pabrik: str
     alamat_pabrik: str
@@ -115,10 +150,22 @@ class DaftarDataBahanKimiaResponse(SQLModel):
     mobile_lokasi: str
     email_lokasi: str
 
-T = TypeVar("T")
+# Model untuk Pagination
 
+# T is a TypeVar that acts as a placeholder for a generic type. 
+# It allows this model to be used with any type of data, ensuring flexibility.
+# For example:
+# - If the response contains a list of chemical inventory items, T can be List[InventoriBahanKimiaResponse].
+# - If the response contains a list of factories, T can be List[DataPabrikPembuat].
+T = TypeVar("T")
 class PaginationResponse(SQLModel, Generic[T]):
+    """
+    A generic response schema for paginated data. 
+    Used to standardize the structure of API responses with pagination.
+    
+    Attributes:
+    - data: A generic type (T), which allows this model to handle any type of data (e.g., lists of specific models).
+    """
     data: T
     current_page: int
     total_pages: int
-    total_data: int
