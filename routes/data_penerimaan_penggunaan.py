@@ -13,8 +13,7 @@ class DataPenerimaanPenggunaanBase(SQLModel):
     date: str
     transaction_type: str
     id_chemical_material: int
-    amount: int
-    unit: str
+    amount: float
     description: Optional[str] = None
 
 class DataPenerimaanPenggunaanCreate(SQLModel):
@@ -94,6 +93,14 @@ def get_total_inventory(
         ).one_or_none()
         or 0
     )
+    
+    # Validasi: total_used tidak boleh melebihi total_received
+    if total_used > total_received:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Invalid inventory data: total_used ({total_used}) cannot exceed total_received ({total_received})."
+        )
+        
     return {"total_received": total_received, "total_used": total_used}
 
 
@@ -174,7 +181,8 @@ def list_data_penerimaan_penggunaan(
     
     # Query untuk mencari data dengan pencarian di nama, alamat, atau telepon
     query = select(
-        DataBahanKimia.name, 
+        DataBahanKimia.name,
+        DataBahanKimia.unit,
         DataPenerimaanPenggunaan
         ).join(DataPenerimaanPenggunaan.chemical_material)
     
@@ -183,10 +191,10 @@ def list_data_penerimaan_penggunaan(
         condition = (
             DataPenerimaanPenggunaan.date.ilike(f'%{search}%') |
             DataPenerimaanPenggunaan.transaction_type.ilike(f'%{search}%') |
-            DataPenerimaanPenggunaan.id_chemical_material.ilike(f'%{search}%') |
             DataPenerimaanPenggunaan.amount.ilike(f'%{search}%') |
-            DataPenerimaanPenggunaan.unit.ilike(f'%{search}%') |
-            DataPenerimaanPenggunaan.description.ilike(f'%{search}%')
+            DataBahanKimia.unit.ilike(f'%{search}%') |
+            DataPenerimaanPenggunaan.description.ilike(f'%{search}%') |
+            DataBahanKimia.name.ilike(f'%{search}%')
         )
         
         query = query.where(condition)
@@ -201,14 +209,14 @@ def list_data_penerimaan_penggunaan(
     
     # Format data ke JSON-friendly format
     data = []
-    for chemical_material_name, penerimaan_penggunaan in raw_data:
+    for chemical_material_name, chemical_material_unit, penerimaan_penggunaan in raw_data:
         data.append({
             "id": penerimaan_penggunaan.id,
             "date": penerimaan_penggunaan.date,
             "transaction_type": penerimaan_penggunaan.transaction_type,
             "id_chemical_material": penerimaan_penggunaan.id_chemical_material,
             "amount": penerimaan_penggunaan.amount,
-            "unit": penerimaan_penggunaan.unit,
+            "unit": chemical_material_unit,
             "description": penerimaan_penggunaan.description,
             "name": chemical_material_name,
         })
