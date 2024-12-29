@@ -9,8 +9,8 @@ engine = create_engine(sqlite_url, connect_args=connect_args)
 
 # Fungsi untuk menghapus tabel
 def drop_table():
-    # DataPabrikPembuat.__table__.drop(bind=engine)
     # LokasiBahanKimia.__table__.drop(bind=engine)
+    # DataPabrikPembuat.__table__.drop(bind=engine)
     # DataBahanKimia.__table__.drop(bind=engine)
     DataPenerimaanPenggunaan.__table__.drop(bind=engine)
     print("Tabel telah dihapus.")
