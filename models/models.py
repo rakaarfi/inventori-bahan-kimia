@@ -55,10 +55,7 @@ class DataBahanKimia(SQLModel, table=True):
     id_factory : int = Field(foreign_key="datapabrikpembuat.id")
     id_location : int = Field(foreign_key="lokasibahankimia.id")
     
-    # The factory that produces this chemical material
     factory: Optional[DataPabrikPembuat] = Relationship(back_populates="chemicals")
-    
-    # The location where this chemical material is stored
     location: Optional[LokasiBahanKimia] = Relationship(back_populates="chemicals")
     
     """
@@ -74,8 +71,7 @@ class DataPenerimaanPenggunaan(SQLModel, table=True):
     date: str
     transaction_type: str
     id_chemical_material: int = Field(foreign_key="databahankimia.id")
-    amount: int
-    unit: str
+    amount: float
     description: str
     
     """
@@ -127,6 +123,7 @@ class DaftarDataBahanKimiaResponse(SQLModel):
     This schema includes detailed information about chemical materials, 
     manufacturers, and storage locations.
     """
+    id_bahan_kimia: int
     nama_bahan: str
     karakteristik: str
     max_amount: int
