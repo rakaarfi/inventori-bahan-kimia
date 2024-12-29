@@ -29,7 +29,7 @@ def get_inventori_bahan_kimia(
             DataBahanKimia.unit.label("unit_bahan"),
             DataPenerimaanPenggunaan.date.label("tanggal"),
             DataPenerimaanPenggunaan.amount.label("jumlah"),
-            DataPenerimaanPenggunaan.unit.label("unit_penerimaan"),
+            DataBahanKimia.unit.label("unit_penerimaan"),
         )
         .join(DataBahanKimia.factory)
         .join(DataBahanKimia.receipt_usage)
@@ -149,6 +149,7 @@ def get_report_data_bahan_kimia(
 
     statement = (
         select(
+            DataBahanKimia.id.label("id_bahan_kimia"),
             DataBahanKimia.name.label("nama_bahan_kimia"),
             DataBahanKimia.characteristic.label("karakteristik"),
             DataBahanKimia.max_amount.label("jumlah_inventori_maksimum"),
@@ -191,6 +192,7 @@ def get_report_data_bahan_kimia(
     
     data = [
         {
+            "id_bahan_kimia": row.id_bahan_kimia,
             "nama_bahan_kimia": row.nama_bahan_kimia,
             "karakteristik": row.karakteristik,
             "jumlah_inventori_maksimum": row.jumlah_inventori_maksimum,
